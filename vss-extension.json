@@ -49,7 +49,7 @@
   ],
   "contributions": [
     {
-      "id": "upload-bom-dtrack-task",
+      "id": "upload-bom-dtrack",
       "type": "ms.vss-distributed-task.task",
       "targets": [
         "ms.vss-distributed-task.tasks"

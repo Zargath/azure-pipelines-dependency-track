@@ -1,6 +1,21 @@
 # Dependency Track for Azure DevOps Pipelines
 Azure DevOps extension for submitting BOM reports to Dependency-Track
 
+## Migrating from GSoft to EShaar
+In November of 2023, after 11 years of working for GSoft, now know as Workleap, I have moved on to other projects. Because of this, I have no longer been unable to maintain the GSoft version of this extension. 
+
+To use this never version, simply update the task id from `upload-bom-dtrack-task` to `upload-bom-dtrack` in your pipeline definition. No need to remove the GSoft extension.
+
+```yaml
+- task: upload-bom-dtrack@1
+  displayName: 'Upload BOM to https://dtrack.example.com/'
+  inputs:
+    bomFilePath: '$(Agent.TempDirectory)/bom.xml'
+    dtrackProjId: '00000000-0000-0000-0000-000000000000'
+    dtrackAPIKey: '$(dtrackAPIKey)'
+    dtrackURI: 'https://dtrack.example.com/'
+```
+
 ## Parameters
 ### Base Settings
 | Name    | Id |      Description      |  Required |
@@ -58,7 +73,7 @@ steps:
     cyclonedx-npm --output-file '$(Agent.TempDirectory)/bom.xml'
   displayName: 'Create BOM'
 
-- task: upload-bom-dtrack-task@1
+- task: upload-bom-dtrack@1
   displayName: 'Upload BOM to https://dtrack.example.com/'
   inputs:
     bomFilePath: '$(Agent.TempDirectory)/bom.xml'
@@ -91,7 +106,7 @@ steps:
     cyclonedx-npm --output-file '$(Agent.TempDirectory)/bom.xml'
   displayName: 'Create BOM'
 
-- task: upload-bom-dtrack-task@1
+- task: upload-bom-dtrack@1
   displayName: 'Upload BOM to https://dtrack.example.com/'
   inputs:
     bomFilePath: '$(Agent.TempDirectory)/bom.xml'
@@ -128,7 +143,7 @@ steps:
     cyclonedx-npm --output-file '$(Agent.TempDirectory)/bom.xml'
   displayName: 'Create BOM'
 
-- task: upload-bom-dtrack-task@1
+- task: upload-bom-dtrack@1
   displayName: 'Upload BOM to https://dtrack.example.com/'
   inputs:
     bomFilePath: '$(Agent.TempDirectory)/bom.xml'

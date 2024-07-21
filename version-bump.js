@@ -87,7 +87,7 @@ const run = async args => {
     id: 'vss-dependency-track-integration',
     name: 'Dependency Track',
     publisher: 'eshaar-me',
-    version: { major: 2, minor: 0, patch: 0 },
+    version: { major: 1, minor: 0, patch: 0 },
     galleryFlags: ['Public'],
     public: true
   }
