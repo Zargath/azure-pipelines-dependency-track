@@ -2,7 +2,7 @@
 Azure DevOps extension for submitting BOM reports to Dependency-Track
 
 ## Migrating from GSoft to EShaar
-In November of 2023, after 11 years of working for GSoft, now know as Workleap, I have moved on to other projects. Because of this, I have no longer been unable to maintain the GSoft version of this extension. 
+In November of 2023, after 11 years of working for GSoft, now know as Workleap, I have moved on to other projects. Because of this, I have no longer been unable to maintain the GSoft version of this extension. It is for this reason I have forked it and published a new one under my own name.
 
 To use this never version, simply update the task id from `upload-bom-dtrack-task` to `upload-bom-dtrack` in your pipeline definition. No need to remove the GSoft extension.
 
@@ -159,5 +159,5 @@ Dependency Track for Azure DevOps Pipelines can be installed from the [Visual St
 ## License
 This code is licensed under the Apache License, Version 2.0. You may obtain a copy of this license [HERE](LICENSE).
 
-Dependency-Track is Copyright (c) Steve Springett. All Rights Reserved.
+Dependency-Track is Copyright (c) OWASP Foundation. All Rights Reserved.
 https://github.com/DependencyTrack/dependency-track
