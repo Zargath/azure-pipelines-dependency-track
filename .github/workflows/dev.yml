@@ -61,4 +61,4 @@ jobs:
       
       - name: Publish to marketplace
         run: |
-          find ./package -name '*.vsix' -exec tfx extension publish -- --publisher gsoft-dev -t ${{ secrets.marketplace_access_token }} --vsix {} \;
+          find ./package -name '*.vsix' -exec tfx extension publish -- --publisher eshaar-me-dev -t ${{ secrets.marketplace_access_token }} --vsix {} \;

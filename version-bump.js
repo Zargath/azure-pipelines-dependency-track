@@ -84,10 +84,10 @@ const run = async args => {
   console.log(`Updating extension information for ${args['release-type']}`);
 
   let settings = {
-    id: 'dependency-track-vsts',
+    id: 'vss-dependency-track-integration',
     name: 'Dependency Track',
-    publisher: 'GSoft',
-    version: { major: 1, minor: 0, patch: 0 },
+    publisher: 'eshaar-me',
+    version: { major: 2, minor: 0, patch: 0 },
     galleryFlags: ['Public'],
     public: true
   }
@@ -99,7 +99,7 @@ const run = async args => {
     case 'dev':
       settings.id += '-dev'
       settings.name += ' (dev)'
-      settings.publisher = 'gsoft-dev'
+      settings.publisher = 'eshaar-me-dev'
       settings.galleryFlags = ['Preview'];
       settings.public = false;
 

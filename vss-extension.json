@@ -1,10 +1,10 @@
 {
   "manifestVersion": 1,
-  "id": "dependency-track-vsts",
+  "id": "vss-dependency-track-integration",
   "version": "0.0.0",
   "name": "Dependency Track",
   "description": "Tasks that help with the integration between Azure DevOps and Dependency Track.",
-  "publisher": "GSoft",
+  "publisher": "eshaar-me",
   "icons": {
     "default": "images/icon128.png"
   },
@@ -69,6 +69,6 @@
   },
   "repository": {
     "type": "git",
-    "uri": "https://github.com/gsoft-inc/azure-pipelines-dependency-track"
+    "uri": "https://github.com/Zargath/azure-pipelines-dependency-track"
   }
 }
