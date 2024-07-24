@@ -74,20 +74,28 @@
       "helpMarkDown": "The path where the BOM file is located. (e.g. 'directory/**/bom.xml')."
     },
     {
+      "name": "serviceConnection",
+      "label": "Service Connection", 
+      "type": "connectedService:Generic",
+      "required": false,
+      "groupName": "baseSettings",
+      "helpMarkDown": "The Dependency Track service connection. This is used to set the Dependency Track URI and API Key. If this is set, the Dependency Track URI and API Key inputs will be ignored."
+    },
+    {
       "name": "dtrackAPIKey",
       "label": "API Key",
       "type": "string",
-      "required": true,
+      "required": false,
       "groupName": "baseSettings",
-      "helpMarkDown": "The Dependency Track API key"
+      "helpMarkDown": "The Dependency Track API key. This is used to authenticate to Dependency Track. Required if Service Connection is not specified."
     },
     {
       "name": "dtrackURI",
       "label": "Dependency Track URI",
       "type": "string",
-      "required": true,
+      "required": false,
       "groupName": "baseSettings",
-      "helpMarkDown": "The URL to the Dependency Track platform"
+      "helpMarkDown": "The URL to the Dependency Track platform. Required if Service Connection is not specified."
     },
     {
       "name": "thresholdAction",
