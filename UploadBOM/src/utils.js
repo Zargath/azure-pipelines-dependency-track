@@ -7,10 +7,10 @@ class Utils {
         if (err.error) {
             let errorMsg;
             try {
-            errorMsg = JSON.stringify(err.error);
+                errorMsg = JSON.stringify(err.error);
             }
             catch {
-            errorMsg = err.error;
+                errorMsg = err.error;
             }
 
             return `${errorMsg}`;
