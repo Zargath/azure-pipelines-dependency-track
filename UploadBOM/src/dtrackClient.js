@@ -19,7 +19,7 @@ class DTrackClient {
       request('/api/v1/bom', {
         ...this.baseOptions,
         method: 'POST',
-        body: {
+        formData: {
           "project": projId,
           "bom": bom.toString()
         }
