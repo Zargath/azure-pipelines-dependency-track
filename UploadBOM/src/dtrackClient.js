@@ -145,7 +145,7 @@ class DTrackClient {
       request('/api/v1/bom', {
         ...this.baseOptions,
         method: 'POST',
-        data
+        formData: data
       }, (error, response) => {
         if (!error && response.statusCode === 200) {
           resolve(response.body.token);
