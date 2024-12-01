@@ -87,7 +87,7 @@
       "type": "boolean",
       "required": false,
       "groupName": "baseSettings",
-      "helpMarkDown": "Sets the new child project as the latest version. Requires parent project name and version to be specified. Only works if Auto Create Project is set to TRUE."
+      "helpMarkDown": "Sets the new child project as the latest version. Requires parent project name and version to be specified. Only works if Auto Create Project is set to TRUE. Defaults to false."
     },
     {
       "name": "bomFilePath",
