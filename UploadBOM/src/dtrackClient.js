@@ -18,10 +18,10 @@ class DTrackClient {
     return new Promise((resolve, reject) => {
       request('/api/v1/bom', {
         ...this.baseOptions,
-        method: 'PUT',
-        body: {
+        method: 'POST',
+        formData: {
           "project": projId,
-          "bom": bom.toString('base64')
+          "bom": bom.toString()
         }
       },
         (error, response) => {
@@ -38,12 +38,12 @@ class DTrackClient {
     return new Promise((resolve, reject) => {
       request('/api/v1/bom', {
         ...this.baseOptions,
-        method: 'PUT',
-        body: {
-          "autoCreate": true,
+        method: 'POST',
+        formData: {
+          "autoCreate": 'true',
           "projectName": name,
           "projectVersion": version,
-          "bom": bom.toString('base64')
+          "bom": bom.toString()
         }
       },
         (error, response) => {
