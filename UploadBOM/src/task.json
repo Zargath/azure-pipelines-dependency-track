@@ -66,6 +66,30 @@
       "helpMarkDown": "When set to TRUE and the project in Dependency Track does not exist, it will be created. Requires project name and version to be specified. The API Key will need the PORTFOLIO_MANAGEMENT or PROJECT_CREATION_UPLOAD permission."
     },
     {
+      "name": "dtrackParentProjName",
+      "label": "Parent Project Name",
+      "type": "string",
+      "required": false,
+      "groupName": "baseSettings",
+      "helpMarkDown": "The name of the parent project in Dependency Track. Only works if Auto Create Project is set to TRUE."
+    },
+    {
+      "name": "dtrackParentProjVersion",
+      "label": "Parent Project Version",
+      "type": "string",
+      "required": false,
+      "groupName": "baseSettings",
+      "helpMarkDown": "The version of the parent project in Dependency Track. Only works if Auto Create Project is set to TRUE."
+    },
+    {
+      "name": "dtrackIsLatest",
+      "label": "Is Latest Version",
+      "type": "boolean",
+      "required": false,
+      "groupName": "baseSettings",
+      "helpMarkDown": "Sets the new child project as the latest version. Requires parent project name and version to be specified. Only works if Auto Create Project is set to TRUE."
+    },
+    {
       "name": "bomFilePath",
       "label": "BOM File Path",
       "type": "filePath",
@@ -208,6 +232,7 @@
     "UnableToReadCA": "Unable to read certificate file: %s",
     "ReadingCA": "Reading certificate from location: %s",
     "BOMUploadAndCreateStarting": "Starting BOM upload to Dependency Track at url: %s\nProject with name '%s' and version '%s' will be created if it does not exist.",
+    "BOMUploadAndCreateChildStarting": "Starting BOM upload to Dependency Track at url: %s\nProject with name '%s' and version '%s' will be created as a child of project with name '%s' and version '%s'.",
     "BOMUploadWithIdStarting": "Starting BOM upload to Dependency Track for project with id '%s' at url: %s",
     "BOMUploadFailed": "Uploading the BOM to Dependency Track Failed: %s",
     "BOMUploadSucceed": "Uploading the BOM succeeded! Token: %s",

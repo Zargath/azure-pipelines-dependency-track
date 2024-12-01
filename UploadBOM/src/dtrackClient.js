@@ -15,45 +15,34 @@ class DTrackClient {
   }
 
   uploadBomAsync(projId, bom) {
-    return new Promise((resolve, reject) => {
-      request('/api/v1/bom', {
-        ...this.baseOptions,
-        method: 'POST',
-        formData: {
-          "project": projId,
-          "bom": bom.toString()
-        }
-      },
-        (error, response) => {
-          if (!error && response.statusCode == 200) {
-            resolve(response.body.token);
-          }
-
-          reject({ error, response });
-        });
-    });
+    const data = {
+      "project": projId,
+      "bom": bom.toString()
+    };
+    return this.#postBomAsync(data);
   }
-
+  
   uploadBomAndCreateProjectAsync(name, version, bom) {
-    return new Promise((resolve, reject) => {
-      request('/api/v1/bom', {
-        ...this.baseOptions,
-        method: 'POST',
-        formData: {
-          "autoCreate": 'true',
-          "projectName": name,
-          "projectVersion": version,
-          "bom": bom.toString()
-        }
-      },
-        (error, response) => {
-          if (!error && response.statusCode == 200) {
-            resolve(response.body.token);
-          }
-
-          reject({ error, response });
-        });
-    });
+    const data = {
+      "autoCreate": 'true',
+      "projectName": name,
+      "projectVersion": version,
+      "bom": bom.toString()
+    };
+    return this.#postBomAsync(data);
+  }
+  
+  uploadBomAndCreateChildProjectAsync(name, version, parentName, parentVersion, isLatest, bom) {
+    const data = {
+      "autoCreate": 'true',
+      "projectName": name,
+      "projectVersion": version,
+      "parentName": parentName,
+      "parentVersion": parentVersion,
+      "isLatest": isLatest,
+      "bom": bom.toString()
+    };
+    return this.#postBomAsync(data);
   }
   
   getProjectUUID(projectName, projectVersion) {
@@ -147,6 +136,22 @@ class DTrackClient {
         }
         
         reject({ error, response });
+      });
+    });
+  }
+
+  #postBomAsync(data) {
+    return new Promise((resolve, reject) => {
+      request('/api/v1/bom', {
+        ...this.baseOptions,
+        method: 'POST',
+        data
+      }, (error, response) => {
+        if (!error && response.statusCode === 200) {
+          resolve(response.body.token);
+        } else {
+          reject({ error, response });
+        }
       });
     });
   }

@@ -42,6 +42,16 @@ class DtrackManager {
     }
   }
 
+  async uploadBomAndCreateChildProjectAsync(name, version, parentName, parentVersion, isLatest, bom) {
+    try {
+      const token = await this.dtrackClient.uploadBomAndCreateChildProjectAsync(name, version, parentName, parentVersion, isLatest, bom);
+      return token;
+    }
+    catch (err) {
+      throw new Error(localize('BOMUploadFailed', Utils.getErrorMessage(err)));
+    }
+  }
+
   async waitBomProcessing(token) {
     let processing = true;
     while (processing) {
