@@ -141,12 +141,16 @@ class DTrackClient {
   }
 
   #postBomAsync(data) {
+    options = {
+      ...this.baseOptions,
+      url: '/api/v1/bom',
+      formData: data
+    };
+
+    console.log(JSON.stringify(options));
+    
     return new Promise((resolve, reject) => {
-      request.post({
-        ...this.baseOptions,
-        url: '/api/v1/bom',
-        formData: data
-      }, (error, response) => {
+      request.post(options, (error, response) => {
         if (!error && response.statusCode === 200) {
           resolve(response.body.token);
         } else {
