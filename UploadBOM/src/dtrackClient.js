@@ -8,7 +8,6 @@ class DTrackClient {
 
     this.baseOptions = {
       baseUrl: this.baseUrl,
-      json: true,
       headers: { 
         'X-API-Key': this.apiKey
       },
