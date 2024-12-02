@@ -8,6 +8,7 @@ class DTrackClient {
 
     this.baseOptions = {
       baseUrl: this.baseUrl,
+      json: true,
       headers: { 
         'X-API-Key': this.apiKey
       },
@@ -48,9 +49,9 @@ class DTrackClient {
   
   getProjectUUID(projectName, projectVersion) {
     return new Promise((resolve, reject) => {
-        request.get({
+        request(`/api/v1/project/lookup?name=${projectName}&version=${projectVersion}`, {
         ...this.baseOptions,
-        url: `/api/v1/project/lookup?name=${projectName}&version=${projectVersion}`,
+        method: 'GET',
       },
       (error, response) => {
         if (!error && response.statusCode == 200) {
@@ -68,12 +69,11 @@ class DTrackClient {
     });
   }
 
-
   pullProcessingStatusAsync(token) {
     return new Promise((resolve, reject) => {
-      request.get({
+      request(`/api/v1/bom/token/${token}`, {
         ...this.baseOptions,
-        url: `/api/v1/bom/token/${token}`,
+        method: 'GET',
       },
         (error, response) => {
           if (!error && response.statusCode == 200) {
@@ -87,9 +87,9 @@ class DTrackClient {
 
   getProjectMetricsAsync(projId) {
     return new Promise((resolve, reject) => {
-      request.get({
+      request(`/api/v1/metrics/project/${projId}/current`, {
         ...this.baseOptions,
-        url: `/api/v1/metrics/project/${projId}/current`,
+        method: 'GET',
       },
       (error, response) => {
         if (!error && response.statusCode == 200) {
@@ -103,9 +103,9 @@ class DTrackClient {
 
   getLastMetricCalculationDate(projId) {
     return new Promise((resolve, reject) => {
-      request.get({
+      request(`/api/v1/metrics/project/${projId}/current`, {
         ...this.baseOptions,
-        url: `/api/v1/metrics/project/${projId}/current`,
+        method: 'GET',
       },
       (error, response) => {
         if (!error && response.statusCode == 200) {
@@ -127,9 +127,9 @@ class DTrackClient {
 
   getProjectInfo(projId) {
     return new Promise((resolve, reject) => {
-      request.get({
+      request(`/api/v1/project/${projId}`, {
         ...this.baseOptions,
-        url: `/api/v1/project/${projId}`,
+        method: 'GET',
       },
       (error, response) => {
         if (!error && response.statusCode == 200) {
@@ -143,9 +143,9 @@ class DTrackClient {
 
   #postBomAsync(data) {
     return new Promise((resolve, reject) => {
-      request.post({
+      request('/api/v1/bom', {
         ...this.baseOptions,
-        url: '/api/v1/bom',
+        method: 'POST',
         formData: data
       }, (error, response) => {
         if (!error && response.statusCode === 200) {
