@@ -8,6 +8,7 @@ class DTrackClient {
 
     this.baseOptions = {
       baseUrl: this.baseUrl,
+      json: true,
       headers: { 
         'X-API-Key': this.apiKey
       },
@@ -40,7 +41,7 @@ class DTrackClient {
       "projectVersion": version,
       "parentName": parentName,
       "parentVersion": parentVersion,
-      //"isLatest": isLatest,
+      "isLatest": String(isLatest),
       "bom": bom.toString()
     };
     return this.#postBomAsync(data);
