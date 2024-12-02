@@ -1,5 +1,4 @@
 import request from 'request'
-import { json } from 'stream/consumers';
 
 class DTrackClient {
   constructor(url, apiKey, caFile) {
