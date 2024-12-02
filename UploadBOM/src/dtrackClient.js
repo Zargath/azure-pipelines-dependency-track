@@ -8,9 +8,9 @@ class DTrackClient {
 
     this.baseOptions = {
       baseUrl: this.baseUrl,
-      json: true,
       headers: { 
-        'X-API-Key': this.apiKey
+        'X-API-Key': this.apiKey,
+        'Content-type': 'application/json'
       },
       ...(this.caFile ? { ca: this.caFile } : {}),
     }
@@ -147,7 +147,7 @@ class DTrackClient {
       request.post({
         ...this.baseOptions,
         url: '/api/v1/bom',
-        body: data
+        formData: data
       }, (error, response) => {
         if (!error && response.statusCode === 200) {
           resolve(response.body.token);
