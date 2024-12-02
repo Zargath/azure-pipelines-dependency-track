@@ -141,7 +141,7 @@ class DTrackClient {
   }
 
   #postBomAsync(data) {
-    options = {
+    const options = {
       ...this.baseOptions,
       url: '/api/v1/bom',
       formData: data
