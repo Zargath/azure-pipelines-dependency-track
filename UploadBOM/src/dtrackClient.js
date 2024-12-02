@@ -1,4 +1,5 @@
 import request from 'request'
+import { json } from 'stream/consumers';
 
 class DTrackClient {
   constructor(url, apiKey, caFile) {
@@ -9,7 +10,9 @@ class DTrackClient {
     this.baseOptions = {
       baseUrl: this.baseUrl,
       json: true,
-      headers: { 'X-API-Key': this.apiKey },
+      headers: { 
+        'X-API-Key': this.apiKey
+      },
       ...(this.caFile ? { ca: this.caFile } : {}),
     }
   }
@@ -141,16 +144,12 @@ class DTrackClient {
   }
 
   #postBomAsync(data) {
-    const options = {
-      ...this.baseOptions,
-      url: '/api/v1/bom',
-      formData: data
-    };
-
-    console.log(JSON.stringify(options));
-    
     return new Promise((resolve, reject) => {
-      request.post(options, (error, response) => {
+      request.post({
+        ...this.baseOptions,
+        url: '/api/v1/bom',
+        body: data
+      }, (error, response) => {
         if (!error && response.statusCode === 200) {
           resolve(response.body.token);
         } else {
