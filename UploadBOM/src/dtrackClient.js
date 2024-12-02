@@ -143,7 +143,7 @@ class DTrackClient {
 
   #postBomAsync(data) {
     return new Promise((resolve, reject) => {
-      request('/api/v1/bom', {
+      const req = request('/api/v1/bom', {
         ...this.baseOptions,
         method: 'POST',
         formData: data
@@ -153,6 +153,10 @@ class DTrackClient {
         } else {
           reject({ error, response });
         }
+      });
+
+      req.on('request', (req) => {
+        console.log('Raw request:', req);
       });
     });
   }
