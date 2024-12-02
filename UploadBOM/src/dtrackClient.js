@@ -9,8 +9,7 @@ class DTrackClient {
     this.baseOptions = {
       baseUrl: this.baseUrl,
       headers: { 
-        'X-API-Key': this.apiKey,
-        'Content-type': 'application/json'
+        'X-API-Key': this.apiKey
       },
       ...(this.caFile ? { ca: this.caFile } : {}),
     }
