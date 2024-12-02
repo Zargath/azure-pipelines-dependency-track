@@ -39,7 +39,7 @@ class DTrackClient {
       "projectVersion": version,
       "parentName": parentName,
       "parentVersion": parentVersion,
-      "isLatest": isLatest,
+      "isLatest": isLatest.toString(),
       "bom": bom.toString()
     };
     return this.#postBomAsync(data);
