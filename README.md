@@ -25,6 +25,9 @@ To use this never version, simply update the task id from `upload-bom-dtrack-tas
 | Project Name | dtrackProjName | The name of the project in Dependency Track. Required if project id is not specified. | False |
 | Project Version | dtrackProjVersion | The version of the project in Dependency Track. Required if project id is not specified. | False |
 | Auto Create Project | dtrackProjAutoCreate | When set to TRUE and the project in Dependency Track does not exist, it will be created. Requires project name and version to be specified. The API Key will need the PORTFOLIO_MANAGEMENT or PROJECT_CREATION_UPLOAD permission. Default: False | False |
+| Parent Project Name | dtrackParentProjName | The name of the parent project in Dependency Track. Only works if Auto Create Project is set to TRUE. | FALSE |
+| Parent Project Version | dtrackParentProjVersion | The version of the parent project in Dependency Track. Only works if Auto Create Project is set to TRUE. | FALSE |
+| Is Latest Version | dtrackIsLatest | Sets the new child project as the latest version. Requires parent project name and version to be specified. Only works if Auto Create Project is set to TRUE. Defaults to false. | FALSE |
 | API Key | dtrackAPIKey | The Dependency Track API key. Ignored if Service Connection is specified. | False |
 | Dependency Track URI | dtrackURI | The URL to the Dependency Track platform. Ignored if Service Connection is specified. | False |
 | Service Connection | serviceConnection | Generic service connection that contains the Dependency Track URI and API Key. | False |
