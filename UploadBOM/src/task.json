@@ -259,7 +259,7 @@
     "MissingProjectInfoWhenNoProjectId": "Project name and version is required when Project Id is not set."
   },
   "execution": {
-    "Node10": {
+    "Node20_1": {
       "target": "task.js"
     }
   }
