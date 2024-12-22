@@ -133,8 +133,17 @@ const run = async args => {
     content.public = settings.public;
   })
 
-  const taskJsonPath = path.resolve(__dirname, 'UploadBOM/dist/task.json');
-  await updateJsonContent(taskJsonPath, content => {
+  const bomTaskJsonPath = path.resolve(__dirname, 'UploadBOM/dist/task.json');
+  await updateJsonContent(bomTaskJsonPath, content => {
+    content.version = {
+      Major: settings.version.major,
+      Minor: settings.version.minor,
+      Patch: settings.version.patch
+    };
+  });
+
+  const projectTaskJsonPath = path.resolve(__dirname, 'UpdateProject/dist/task.json');
+  await updateJsonContent(projectTaskJsonPath, content => {
     content.version = {
       Major: settings.version.major,
       Minor: settings.version.minor,

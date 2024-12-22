@@ -1,0 +1,95 @@
+{
+  "id": "B45E3681-9B7D-4B3F-B440-40F347337EEB",
+  "name": "update-projet-dtrack",
+  "friendlyName": "Update Dependency Track Project",
+  "description": "Update a project in Dependnecy Track.",
+  "instanceNameFormat": "Update Project $(projectName) in Dependency Track",
+  "author": "Edouard Shaar",
+  "category": "Build",
+  "visibility": [
+    "Build"
+  ],
+  "version": {
+    "Major": 0,
+    "Minor": 0,
+    "Patch": 0
+  },
+  "minimumAgentVersion": "2.0.0",
+  "groups": [
+    {
+      "name": "baseSettings",
+      "displayName": "Base Settings",
+      "isExpanded": true
+    },
+    {
+      "name": "connectionSettings",
+      "displayName": "Connection Settings",
+      "isExpanded": false
+    }
+  ],
+  "inputs": [
+    {
+      "name": "projectName",
+      "label": "Project Name",
+      "type": "string",
+      "required": true,
+      "groupName": "baseSettings",
+      "helpMarkDown": "The name of the project in Dependency Track."
+    },
+    {
+      "name": "projectVersion",
+      "label": "Project Version",
+      "type": "string",
+      "required": true,
+      "groupName": "baseSettings",
+      "helpMarkDown": "The version of the project in Dependency Track."
+    },
+    {
+      "name": "serviceConnection",
+      "label": "Service Connection", 
+      "type": "connectedService:Generic",
+      "required": false,
+      "groupName": "connectionSettings",
+      "helpMarkDown": "The Dependency Track service connection. This is used to set the Dependency Track URI and API Key. If this is set, the Dependency Track URI and API Key inputs will be ignored."
+    },
+    {
+      "name": "dtrackAPIKey",
+      "label": "API Key",
+      "type": "string",
+      "required": false,
+      "groupName": "connectionSettings",
+      "helpMarkDown": "The Dependency Track API key. This is used to authenticate to Dependency Track. Required if Service Connection is not specified."
+    },
+    {
+      "name": "dtrackURI",
+      "label": "Dependency Track URI",
+      "type": "string",
+      "required": false,
+      "groupName": "connectionSettings",
+      "helpMarkDown": "The URL to the Dependency Track platform. Required if Service Connection is not specified."
+    },
+    {
+      "name": "caFilePath",
+      "label": "Trusted CA certificate",
+      "type": "filePath",
+      "required": false,
+      "groupName": "connectionSettings",
+      "helpMarkDown": "File path to PEM encoded CA certificate. This setting is used when Dependency Track is using a self-signed certificate or an internal CA provider for it's TLS configuration."
+    }
+  ],
+  "messages": {
+    "FileNotFound": "File path is not a file: %s",
+    "UnableToReadCA": "Unable to read certificate file: %s",
+    "ReadingCA": "Reading certificate from location: %s",
+    "TaskSucceed": "Finished task execution successfully!",
+    "TaskFailed": "Finished task execution with error - %s",
+    "Polling": "Polling Dependency Track for update.",
+    "ProjectNotFound" : "Unable to find Dependency Track project with name '%s' and version '%s'",
+    "GetProjectUuidStarting": "Getting project id using name '%s' and version '%s'."
+  },
+  "execution": {
+    "Node20_1": {
+      "target": "task.js"
+    }
+  }
+}

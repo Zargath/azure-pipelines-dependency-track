@@ -43,6 +43,19 @@
       "addressable": true
     },
     {
+      "path": "UpdateProject/node_modules",
+      "packagePath": "UpdateProject/node_modules"
+    },
+    {
+      "path": "UpdateProject/dist",
+      "packagePath": "UpdateProject"
+    },
+    {
+      "path": "UpdateProject/icon.png",
+      "packagePath": "UpdateProject/icon.png",
+      "addressable": true
+    },
+    {
       "path": "images",
       "addressable": true
     }
@@ -56,6 +69,16 @@
       ],
       "properties": {
         "name": "UploadBOM"
+      }
+    },
+    {
+      "id": "update-project-dtrack",
+      "type": "ms.vss-distributed-task.task",
+      "targets": [
+        "ms.vss-distributed-task.tasks"
+      ],
+      "properties": {
+        "name": "UpdateProject"
       }
     }
   ],

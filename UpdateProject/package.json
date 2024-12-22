@@ -1,0 +1,24 @@
+{
+  "name": "updateproject",
+  "version": "1.0.0",
+  "description": "",
+  "main": "task.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "babel src --out-dir dist --copy-files"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/core": "^7.21.3",
+    "@babel/plugin-transform-runtime": "^7.21.0",
+    "@babel/preset-env": "^7.15.6",
+    "azure-pipelines-task-lib": "^4.3.1",
+    "request": "^2.88.2"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.21.0",
+    "@types/node": "^22.10.1",
+    "@types/q": "^1.5.5"
+  }
+}

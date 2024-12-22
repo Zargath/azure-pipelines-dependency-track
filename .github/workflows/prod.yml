@@ -26,6 +26,13 @@ jobs:
         npm prune --production
       working-directory: UploadBOM
 
+    - name: Build UpdateProject Task
+      run: |
+        npm install
+        npm run build
+        npm prune --production
+      working-directory: UpdateProject
+
     - name: Update Extension information
       run: |
         npm install
