@@ -2,9 +2,9 @@
 Azure DevOps extension for submitting BOM reports to Dependency-Track
 
 ## Migrating from GSoft to EShaar
-In November of 2023, after 11 years of working for GSoft, now know as Workleap, I have moved on to other projects. Because of this, I have no longer been unable to maintain the GSoft version of this extension. It is for this reason I have forked it and published a new one under my own name.
+In November of 2023, after 11 years of working for GSoft, now known as Workleap, I have moved on to other projects. Because of this, I have no longer been unable to maintain the GSoft version of this extension. It is for this reason I have forked it and published a new one under my own name.
 
-To use this never version, simply update the task id from `upload-bom-dtrack-task` to `upload-bom-dtrack` in your pipeline definition. No need to remove the GSoft extension.
+To use this newer version, simply update the task id from `upload-bom-dtrack-task` to `upload-bom-dtrack` in your pipeline definition. No need to remove the GSoft extension.
 
 ```yaml
 - task: upload-bom-dtrack@1
@@ -122,7 +122,7 @@ steps:
 ```
 
 ## Thresholds Usage Example
-This example finishes the pipeline with a warning if the number of low vulnerabilities surpasse zero.
+This example finishes the pipeline with a warning if the number of low vulnerabilities surpasses zero.
 ![Low Threshold Surpassed Warning](images/pipelineThresholdWarning.png)
 ```yaml
 trigger:
