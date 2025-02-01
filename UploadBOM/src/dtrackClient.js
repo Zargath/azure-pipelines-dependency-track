@@ -141,6 +141,39 @@ class DTrackClient {
     });
   }
 
+  updateProject(projId, description, classifier, cpe, purl, swidTagId, group, tags) {
+    return new Promise((resolve, reject) => {
+      const data = {
+        "description": description,
+        "classifier": classifier,
+        "cpe": cpe,
+        "purl": purl,
+        "swidTagId": swidTagId,
+        "group": group,
+        "tags": tags ? tags.map(tag => ({ name: tag })) : null,
+      }
+
+      // Remove properties with null values
+      Object.keys(data).forEach(key => {
+        if (data[key] == null) {
+          delete data[key];
+        }
+      });
+
+      request(`/api/v1/project/${projId}`, {
+        ...this.baseOptions,
+        method: 'PATCH',
+        formData: data
+      }, (error, response) => {
+        if (!error && response.statusCode === 200) {
+          resolve(response.body);
+        } else {
+          reject({ error, response });
+        }
+      });
+    });
+  }
+
   #postBomAsync(data) {
     return new Promise((resolve, reject) => {
       request('/api/v1/bom', {

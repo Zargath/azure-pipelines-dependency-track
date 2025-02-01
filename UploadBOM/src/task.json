@@ -58,6 +58,76 @@
       "helpMarkDown": "The version of the project in Dependency Track. Required if project id is not specified."
     },
     {
+      "name": "dtrackProjDescription",
+      "label": "Project Description",
+      "type": "string",
+      "required": false,
+      "groupName": "baseSettings",
+      "helpMarkDown": "Set the Project Description in Dependency Track."
+    },
+    {
+      "name": "dtrackProjClassifier",
+      "label": "Project Classifier",
+      "type": "pickList",
+      "required": false,
+      "groupName": "baseSettings",
+      "helpMarkDown": "Set the Project Classifier in Dependency Track.",
+      "options": {
+        "APPLICATION": "Application",
+        "FRAMEWORK": "Framework",
+        "LIBRARY": "Library",
+        "CONTAINER": "Container",
+        "OPERATING_SYSTEM": "Operating System",
+        "DEVICE": "Device",
+        "FIRMWARE": "Firmware",
+        "FILE": "File",
+        "PLATFORM": "Platform",
+        "DEVICE_DRIVER": "Device Driver",
+        "MACHINE_LEARNING_MODEL": "Machine Learning Model",
+        "DATA": "Data"
+      }
+    },
+    {
+      "name": "dtrackProjCPE",
+      "label": "Project CPE",
+      "type": "string",
+      "required": false,
+      "groupName": "baseSettings",
+      "helpMarkDown": "Set the Project Common Platform Enumeration (CPE) in Dependency Track."
+    },
+    {
+      "name": "dtrackProjpurl",
+      "label": "Project PURL",
+      "type": "string",
+      "required": false,
+      "groupName": "baseSettings",
+      "helpMarkDown": "Set the Project Package URL (PURL) in Dependency Track."
+    },
+    {
+      "name": "dtrackProjSwidTagId",
+      "label": "Project SWID Tag ID",
+      "type": "string",
+      "required": false,
+      "groupName": "baseSettings",
+      "helpMarkDown": "Set the Project SWID Tag ID in Dependency Track."
+    },
+    {
+      "name": "dtrackProjGroup",
+      "label": "Project Namespace / group / vendor",
+      "type": "string",
+      "required": false,
+      "groupName": "baseSettings",
+      "helpMarkDown": "Set the Project Namespace / group / vendor identifier in Dependency Track."
+    },
+    {
+      "name": "dtrackProjTags",
+      "label": "Project Tags",
+      "type": "multiLine",
+      "required": false,
+      "groupName": "baseSettings",
+      "helpMarkDown": "Set the Project Tags in Dependency Track. Enter each tag on a new line."
+    },
+    {
       "name": "dtrackProjAutoCreate",
       "label": "Auto Create Project",
       "type": "boolean",
@@ -99,7 +169,7 @@
     },
     {
       "name": "serviceConnection",
-      "label": "Service Connection", 
+      "label": "Service Connection",
       "type": "connectedService:Generic",
       "required": false,
       "groupName": "baseSettings",
@@ -180,7 +250,7 @@
       "groupName": "thresholds",
       "helpMarkDown": "Maximum number of unassigned vulnerabilities to tolerate.\nA value of -1 disables this threshold."
     },
-     {
+    {
       "name": "thresholdpolicyViolationsFail",
       "label": "Fail Policy Violation Count",
       "type": "string",
@@ -189,7 +259,7 @@
       "groupName": "thresholds",
       "helpMarkDown": "Maximum number of failed policy violations to tolerate.\nA value of -1 disables this threshold."
     },
-     {
+    {
       "name": "thresholdpolicyViolationsWarn",
       "label": "Warn Policy Violation Count",
       "type": "string",
@@ -198,7 +268,7 @@
       "groupName": "thresholds",
       "helpMarkDown": "Maximum number of warn policy violations to tolerate.\nA value of -1 disables this threshold."
     },
-     {
+    {
       "name": "thresholdpolicyViolationsInfo",
       "label": "Info Policy Violation Count",
       "type": "string",
@@ -207,7 +277,7 @@
       "groupName": "thresholds",
       "helpMarkDown": "Maximum number of info policy violations to tolerate.\nA value of -1 disables this threshold."
     },
-     {
+    {
       "name": "thresholdpolicyViolationsTotal",
       "label": "Total Policy Violation Count",
       "type": "string",
@@ -252,11 +322,13 @@
     "Low": "Low",
     "Unassigned": "Unassigned",
     "PolicyViolationCount": "Current Policy Violation Count:\nFail: %s\nWarn:%s\nInfo: %s\nTotal: %s",
-    "PollingFailed": "Polling Dependency Track for update Failed: %s"  ,
-    "ProjectNotFound" : "Unable to find Dependency Track project with name '%s' and version '%s'",
+    "PollingFailed": "Polling Dependency Track for update Failed: %s",
+    "ProjectNotFound": "Unable to find Dependency Track project with name '%s' and version '%s'",
     "GetProjectUuidStarting": "Getting project id using name '%s' and version '%s'.",
     "MissingProjectInfoWhenAutoCreate": "Project name and version is required when auto creating project.",
-    "MissingProjectInfoWhenNoProjectId": "Project name and version is required when Project Id is not set."
+    "MissingProjectInfoWhenNoProjectId": "Project name and version is required when Project Id is not set.",
+    "ProjectUpdateFailed": "Failed to update project: %s",
+    "UpdatingProject": "Updating project."
   },
   "execution": {
     "Node20_1": {

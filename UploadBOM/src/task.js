@@ -64,6 +64,8 @@ const run = async () => {
 
   console.log(localize('BOMUploadSucceed', token));
 
+  // Update properties here.
+
   const thresholdExpert = new ThresholdExpert(
     Number.parseInt(params.thresholdCritical),
     Number.parseInt(params.thresholdHigh),
