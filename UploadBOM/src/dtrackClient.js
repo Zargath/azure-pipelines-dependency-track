@@ -145,11 +145,11 @@ class DTrackClient {
     return new Promise((resolve, reject) => {
       const data = {
         "description": description,
-        "classifier": classifier,
-        "cpe": cpe,
-        "purl": purl,
-        "swidTagId": swidTagId,
-        "group": group,
+        //"classifier": classifier,
+        //"cpe": cpe,
+        //"purl": purl,
+        //"swidTagId": swidTagId,
+        //"group": group,
         "tags": tags ? tags.map(tag => ({ name: tag })) : null,
       }
 
