@@ -88,22 +88,6 @@
       }
     },
     {
-      "name": "dtrackProjCPE",
-      "label": "Project CPE",
-      "type": "string",
-      "required": false,
-      "groupName": "baseSettings",
-      "helpMarkDown": "Set the Project Common Platform Enumeration (CPE) in Dependency Track."
-    },
-    {
-      "name": "dtrackProjpurl",
-      "label": "Project PURL",
-      "type": "string",
-      "required": false,
-      "groupName": "baseSettings",
-      "helpMarkDown": "Set the Project Package URL (PURL) in Dependency Track."
-    },
-    {
       "name": "dtrackProjSwidTagId",
       "label": "Project SWID Tag ID",
       "type": "string",

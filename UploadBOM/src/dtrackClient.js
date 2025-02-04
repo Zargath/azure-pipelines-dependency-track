@@ -158,8 +158,6 @@ class DTrackClient {
         }
       });
 
-      console.log('Updating project:', data);
-
       request(`/api/v1/project/${projId}`, {
         ...this.baseOptions,
         method: 'PATCH',
