@@ -151,8 +151,6 @@ class DTrackClient {
         "tags": tags ? tags.map(tag => ({ name: tag })) : null,
       }
 
-      console.log('Updating project:', data);
-
       // Remove properties with null values
       Object.keys(data).forEach(key => {
         if (data[key] == null) {
@@ -170,6 +168,7 @@ class DTrackClient {
         if (!error && response.statusCode === 200) {
           resolve(response.body);
         } else {
+          console.log('Error:', response);
           reject({ error, response });
         }
       });
