@@ -61,6 +61,9 @@ const run = async () => {
       console.log(localize('BOMUploadAndCreateStarting', params.dtrackURI, params.projectName, params.projectVersion));
       token = await dtrackManager.uploadBomAndCreateProjectAsync(params.projectName, params.projectVersion, bom);
     }
+
+    console.log(localize('GetProjectUuidStarting', params.projectName, params.projectVersion));
+    projectId = await dtrackManager.getProjetUUID(params.projectName, params.projectVersion);
   }
   else {
     if (!projectId) {
@@ -94,11 +97,6 @@ const run = async () => {
 
     console.log(localize('ProcessingBOM'));
     await dtrackManager.waitBomProcessing(token);
-
-    if (!projectId) {
-      console.log(localize('GetProjectUuidStarting', params.projectName, params.projectVersion));
-      projectId = await dtrackManager.getProjetUUID(params.projectName, params.projectVersion);
-    }
 
     console.log(localize('RetrievingMetrics'));
     await dtrackManager.waitMetricsRefresh(projectId);
