@@ -141,17 +141,17 @@ class DTrackClient {
     });
   }
 
-  updateProject(projId, description, classifier, cpe, purl, swidTagId, group, tags) {
+  updateProject(projId, description, classifier, swidTagId, group, tags) {
     return new Promise((resolve, reject) => {
       const data = {
         "description": description,
-        //"classifier": classifier,
-        //"cpe": cpe,
-        //"purl": purl,
-        //"swidTagId": swidTagId,
-        //"group": group,
+        "classifier": classifier,
+        "swidTagId": swidTagId,
+        "group": group,
         "tags": tags ? tags.map(tag => ({ name: tag })) : null,
       }
+
+      console.log('Updating project:', data);
 
       // Remove properties with null values
       Object.keys(data).forEach(key => {
@@ -160,10 +160,12 @@ class DTrackClient {
         }
       });
 
+      console.log('Updating project:', data);
+
       request(`/api/v1/project/${projId}`, {
         ...this.baseOptions,
         method: 'PATCH',
-        formData: data
+        json: data
       }, (error, response) => {
         if (!error && response.statusCode === 200) {
           resolve(response.body);

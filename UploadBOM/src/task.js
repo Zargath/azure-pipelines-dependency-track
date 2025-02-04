@@ -76,7 +76,7 @@ const run = async () => {
 
   if (shouldUpdateProject(params)) {
     console.log(localize('UpdatingProject'));
-    await dtrackManager.updateProject(projectId, params.projectTags, params.projectDescription, params.projectSwidTagId, params.projectGroup);
+    await dtrackManager.updateProject(projectId, params.projectDescription, params.projectClassifier, params.projectSwidTagId, params.projectGroup, params.projectTags);
   }
 
   const thresholdExpert = new ThresholdExpert(

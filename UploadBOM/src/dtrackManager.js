@@ -22,9 +22,9 @@ class DtrackManager {
     return info;
   }
 
-  async updateProject(projectId, description, classifier, cpe, purl, swidTagId, group, tags) {
+  async updateProject(projectId, description, classifier, swidTagId, group, tags) {
     try {
-      await this.dtrackClient.updateProject(projectId, description, classifier, cpe, purl, swidTagId, group, tags);
+      await this.dtrackClient.updateProject(projectId, description, classifier, swidTagId, group, tags);
     }
     catch (err) {
       throw new Error(localize('ProjectUpdateFailed', Utils.getErrorMessage(err)));

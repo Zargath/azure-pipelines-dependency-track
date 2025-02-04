@@ -23,8 +23,6 @@ class TaskParametersUtility {
 
             projectDescription: tl.getInput('dtrackProjDescription', false),
             projectClassifier: tl.getInput('dtrackProjClassifier', false),
-            projectCpe: tl.getInput('dtrackProjCPE', false),
-            projectPurl: tl.getInput('dtrackProjpurl', false),
             projectSwidTagId: tl.getInput('dtrackProjSwidTagId', false),
             projectGroup: tl.getInput('dtrackProjGroup', false),
             projectTags: tl.getInput('dtrackProjTags', false)?.split('\n'),
