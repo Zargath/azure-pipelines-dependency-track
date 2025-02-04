@@ -21,6 +21,16 @@ function loadFile(path, errorKey) {
   }
 }
 
+function shouldUpdateProject(params) {
+  return params.projectDescription || 
+         params.projectClassifier || 
+         params.projectCpe || 
+         params.projectPurl || 
+         params.projectSwidTagId || 
+         params.projectGroup || 
+         params.projectTags;
+}
+
 const run = async () => {
   tl.setResourcePath(path.join(__dirname, 'task.json'));
 
@@ -51,6 +61,9 @@ const run = async () => {
       console.log(localize('BOMUploadAndCreateStarting', params.dtrackURI, params.projectName, params.projectVersion));
       token = await dtrackManager.uploadBomAndCreateProjectAsync(params.projectName, params.projectVersion, bom);
     }
+
+    console.log(localize('GetProjectUuidStarting', params.projectName, params.projectVersion));
+    projectId = await dtrackManager.getProjetUUID(params.projectName, params.projectVersion);
   }
   else {
     if (!projectId) {
@@ -63,6 +76,11 @@ const run = async () => {
   }
 
   console.log(localize('BOMUploadSucceed', token));
+
+  if (shouldUpdateProject(params)) {
+    console.log(localize('UpdatingProject'));
+    await dtrackManager.updateProject(projectId, params.projectDescription, params.projectClassifier, params.projectSwidTagId, params.projectGroup, params.projectTags);
+  }
 
   const thresholdExpert = new ThresholdExpert(
     Number.parseInt(params.thresholdCritical),
@@ -79,11 +97,6 @@ const run = async () => {
 
     console.log(localize('ProcessingBOM'));
     await dtrackManager.waitBomProcessing(token);
-
-    if (!projectId) {
-      console.log(localize('GetProjectUuidStarting', params.projectName, params.projectVersion));
-      projectId = await dtrackManager.getProjetUUID(params.projectName, params.projectVersion);
-    }
 
     console.log(localize('RetrievingMetrics'));
     await dtrackManager.waitMetricsRefresh(projectId);
