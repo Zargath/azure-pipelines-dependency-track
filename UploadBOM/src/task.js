@@ -24,8 +24,6 @@ function loadFile(path, errorKey) {
 function shouldUpdateProject(params) {
   return params.projectDescription || 
          params.projectClassifier || 
-         params.projectCpe || 
-         params.projectPurl || 
          params.projectSwidTagId || 
          params.projectGroup || 
          params.projectTags;
