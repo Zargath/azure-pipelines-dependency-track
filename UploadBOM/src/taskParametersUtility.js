@@ -20,6 +20,13 @@ class TaskParametersUtility {
             projectId: tl.getInput('dtrackProjId', false),
             projectName: tl.getInput('dtrackProjName', false),
             projectVersion: tl.getInput('dtrackProjVersion', false),
+
+            projectDescription: tl.getInput('dtrackProjDescription', false),
+            projectClassifier: tl.getInput('dtrackProjClassifier', false),
+            projectSwidTagId: tl.getInput('dtrackProjSwidTagId', false),
+            projectGroup: tl.getInput('dtrackProjGroup', false),
+            projectTags: tl.getInput('dtrackProjTags', false)?.split('\n'),
+
             isProjectAutoCreated: tl.getBoolInput('dtrackProjAutoCreate', false),
             parentProjectName: tl.getInput('dtrackParentProjName', false),
             parentProjectVersion: tl.getInput('dtrackParentProjVersion', false),
