@@ -24,6 +24,11 @@ To use this newer version, simply update the task id from `upload-bom-dtrack-tas
 | Project Id | dtrackProjId | The guid of the project in Dependency Track. Required if project name and version are not specified. | False |
 | Project Name | dtrackProjName | The name of the project in Dependency Track. Required if project id is not specified. | False |
 | Project Version | dtrackProjVersion | The version of the project in Dependency Track. Required if project id is not specified. | False |
+| Project Description | dtrackProjDescription | Set the Project Description in Dependency Track. | False |
+| Project Classifier | dtrackProjClassifier | Set the Project Classifier in Dependency Track. (APPLICATION, FRAMEWORK, LIBRARY, CONTAINER, OPERATING_SYSTEM, DEVICE, FIRMWARE, FILE, PLATFORM, DEVICE_DRIVER, MACHINE_LEARNING_MODEL, DATA) | False |
+| Project SWID Tag ID | dtrackProjSwidTagId | Set the Project SWID Tag ID in Dependency Track. | False |
+| Project Namespace / group / vendor | dtrackProjGroup | Set the Project Namespace / group / vendor identifier in Dependency Track. | False |
+| Project Tags | dtrackProjTags | Set the Project Tags in Dependency Track. Enter each tag on a new line. | False |
 | Auto Create Project | dtrackProjAutoCreate | When set to TRUE and the project in Dependency Track does not exist, it will be created. Requires project name and version to be specified. The API Key will need the PORTFOLIO_MANAGEMENT or PROJECT_CREATION_UPLOAD permission. Default: False | False |
 | Parent Project Name | dtrackParentProjName | The name of the parent project in Dependency Track. Only works if Auto Create Project is set to TRUE. | FALSE |
 | Parent Project Version | dtrackParentProjVersion | The version of the parent project in Dependency Track. Only works if Auto Create Project is set to TRUE. | FALSE |
@@ -157,6 +162,48 @@ steps:
     thresholdAction: 'warn'
     thresholdLow: '0'
 ```
+
+## Update Project Details Example
+```yaml
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '18.x'
+  displayName: 'Install Node.js'
+
+- script: |
+    npm install
+    npm install -g @cyclonedx/cyclonedx-npm
+  displayName: 'npm install'
+
+- script: |
+    cyclonedx-npm --version
+    cyclonedx-npm --output-file '$(Agent.TempDirectory)/bom.xml'
+  displayName: 'Create BOM'
+
+- task: upload-bom-dtrack@1
+  displayName: 'Upload BOM to https://dtrack.example.com/'
+  inputs:
+    bomFilePath: '$(Agent.TempDirectory)/bom.xml'
+    dtrackProjId: '00000000-0000-0000-0000-000000000000'
+    dtrackAPIKey: '$(dtrackAPIKey)'
+    dtrackURI: 'https://dtrack.example.com/'
+    dtrackProjDescription: "A project description"
+    dtrackProjClassifier: CONTAINER
+    dtrackProjSwidTagId: "swid:example.com:product2:1.0.0"
+    dtrackProjGroup: "example.project"
+    dtrackProjTags: |
+      Tag1
+      Tag2
+      Tag Three
+```
+
 ## Installation
 Dependency Track for Azure DevOps Pipelines can be installed from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=eshaar-me.vss-dependency-track-integration).
 
