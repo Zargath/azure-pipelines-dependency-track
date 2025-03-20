@@ -158,6 +158,8 @@ class DTrackClient {
         }
       });
 
+      console.log(data);
+
       request(`/api/v1/project/${projId}`, {
         ...this.baseOptions,
         method: 'PATCH',
@@ -166,7 +168,6 @@ class DTrackClient {
         if (!error && response.statusCode === 200) {
           resolve(response.body);
         } else {
-          console.log('Error:', response);
           reject({ error, response });
         }
       });

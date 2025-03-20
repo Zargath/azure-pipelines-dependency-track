@@ -76,7 +76,6 @@ const run = async () => {
   console.log(localize('BOMUploadSucceed', token));
 
   if (shouldUpdateProject(params)) {
-    console.log(localize('UpdatingProject'));
     await dtrackManager.updateProject(projectId, params.projectDescription, params.projectClassifier, params.projectSwidTagId, params.projectGroup, params.projectTags);
   }
 
