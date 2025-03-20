@@ -148,7 +148,7 @@ class DTrackClient {
         "classifier": classifier,
         "swidTagId": swidTagId,
         "group": group,
-        "tags": tags ? tags.map(tag => ({ name: tag })) : null,
+        "tags": tags,
       }
 
       // Remove properties with null values
@@ -157,8 +157,6 @@ class DTrackClient {
           delete data[key];
         }
       });
-
-      console.log(data);
 
       request(`/api/v1/project/${projId}`, {
         ...this.baseOptions,
