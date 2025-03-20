@@ -5,6 +5,6 @@ function localize(key, ...params) {
     return loc(key, ...params);
   }
   
-  return loc(key)
+  return loc(key);
 }
 export {localize};

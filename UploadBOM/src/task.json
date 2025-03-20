@@ -312,7 +312,11 @@
     "MissingProjectInfoWhenAutoCreate": "Project name and version is required when auto creating project.",
     "MissingProjectInfoWhenNoProjectId": "Project name and version is required when Project Id is not set.",
     "ProjectUpdateFailed": "Failed to update project: %s",
-    "UpdatingProject": "Updating project."
+    "UpdatingProject": "Updating project.",
+    "NoProjectChanges": "Project settings don't need to be updated.",
+    "CurrentProjectSettings": "Current project settings.",
+    "NewProjectSettings": "Update succeeded. New project settings.",
+    "projectSettings": "Id: %s\nName: %s\nVersion: %s\nDescription: %s\nClassifier: %s\nSWID Tag ID: %s\nGroup: %s\nTags: %s\nIs Latest: %s"
   },
   "execution": {
     "Node20_1": {

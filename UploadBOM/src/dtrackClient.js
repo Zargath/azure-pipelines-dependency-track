@@ -148,7 +148,7 @@ class DTrackClient {
         "classifier": classifier,
         "swidTagId": swidTagId,
         "group": group,
-        "tags": tags ? tags.map(tag => ({ name: tag })) : null,
+        "tags": tags,
       }
 
       // Remove properties with null values
@@ -166,7 +166,6 @@ class DTrackClient {
         if (!error && response.statusCode === 200) {
           resolve(response.body);
         } else {
-          console.log('Error:', response);
           reject({ error, response });
         }
       });
