@@ -8,8 +8,9 @@ module.exports = {
   collectCoverage: true,
   coverageDirectory: 'coverage',
   collectCoverageFrom: [
-    'UploadBOM/src/**/*.js',
-    '!**/node_modules/**'
+    'src/**/*.js',
+    '!**/node_modules/**',
+    '!**/__tests__/**'
   ],
   coverageReporters: ['text', 'lcov'],
   verbose: true
