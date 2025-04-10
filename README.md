@@ -110,7 +110,7 @@ Use these inputs to warn or fail the build based on detected vulnerabilities:
 | `thresholdHigh` | Max allowed high vulnerabilities |
 | `thresholdMedium` | Max allowed medium vulnerabilities |
 | `thresholdLow` | Max allowed low vulnerabilities |
-| `thresholdUnassigned` | Max allowed low vulnerabilities |
+| `thresholdUnassigned` | Max allowed unassigned vulnerabilities |
 | `thresholdpolicyViolationsFail` | Max allowed failed policy violations |
 | `thresholdpolicyViolationsWarn` | Max allowed warn policy violations |
 | `thresholdpolicyViolationsInfo` | Max allowed info policy violations |
