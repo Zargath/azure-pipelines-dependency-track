@@ -1,12 +1,12 @@
-import DtrackManager from '../dtrackManager';
-import { localize } from '../localization';
+import DtrackManager from '../../dtrackManager';
+import { localize } from '../../localization';
 
 // Mock dependencies
-jest.mock('../localization', () => ({
+jest.mock('../../localization', () => ({
   localize: jest.fn((key, ...params) => `${key}: ${params.join(' ')}`)
 }));
 
-jest.mock('../utils', () => ({
+jest.mock('../../utils', () => ({
   __esModule: true,
   default: {
     getErrorMessage: jest.fn(err => err.message || String(err)),

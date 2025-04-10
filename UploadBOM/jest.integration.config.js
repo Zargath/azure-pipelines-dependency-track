@@ -4,7 +4,7 @@ module.exports = {
     '^.+\\.jsx?$': 'babel-jest'
   },
   moduleFileExtensions: ['js', 'json'],
-  testMatch: ['**/__tests__/**/*.js', '**/?(*.)+(spec|test).js'],
+  testMatch: ['**/__tests__/integration/**/*.test.js'],
   collectCoverage: true,
   coverageDirectory: 'coverage',
   collectCoverageFrom: [

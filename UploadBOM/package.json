@@ -4,9 +4,12 @@
   "description": "",
   "main": "task.js",
   "scripts": {
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
+    "test": "jest --config=jest.unit.config.js",
+    "test:watch": "jest --watch --config=jest.unit.config.js",
+    "test:coverage": "jest --coverage --config=jest.unit.config.js",
+    "test:integration": "jest --config=jest.integration.config.js",
+    "test:integration:watch": "jest --watch --config=jest.integration.config.js",
+    "test:integration:coverage": "jest --coverage --config=jest.integration.config.js",
     "build": "babel src --out-dir dist --copy-files"
   },
   "author": "",
