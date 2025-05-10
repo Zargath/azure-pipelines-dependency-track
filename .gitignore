@@ -7,3 +7,6 @@
 bom.xml
 run.cmd
 .vscode
+
+dtrack-data
+.test-api-key

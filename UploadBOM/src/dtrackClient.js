@@ -49,7 +49,7 @@ class DTrackClient {
   
   getProjectUUID(projectName, projectVersion) {
     return new Promise((resolve, reject) => {
-        request(`/api/v1/project/lookup?name=${projectName}&version=${projectVersion}`, {
+      request(`/api/v1/project/lookup?name=${projectName}&version=${projectVersion}`, {
         ...this.baseOptions,
         method: 'GET',
       },
