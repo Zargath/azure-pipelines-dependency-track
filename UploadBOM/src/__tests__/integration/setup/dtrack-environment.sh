@@ -47,26 +47,52 @@ wait_for_api_server() {
   local attempts=0
 
   while [[ "$is_ready" == "false" && $attempts -lt $MAX_HEALTH_CHECK_RETRIES ]]; do
-    local response
-    # Add set +e to prevent script from exiting if curl fails
+    # Use -o to save response body and -D to save headers
     set +e
-    response=$(curl -s -f -w "%{http_code}" -o /dev/null "${BASE_URL}/api/version" 2>&1)
+    local temp_headers=$(mktemp)
+    local temp_body=$(mktemp)
+    local http_code=$(curl -s -w "%{http_code}" -D "$temp_headers" -o "$temp_body" "${BASE_URL}/api/version" 2>&1)
     local curl_exit_code=$?
-    # Restore errexit
     set -e
     
-    if [[ "$response" == "200" ]]; then
+    echo "Attempt ${attempts}/${MAX_HEALTH_CHECK_RETRIES}: HTTP code: $http_code, curl exit code: $curl_exit_code"
+    
+    if [[ "$curl_exit_code" -ne 0 ]]; then
+      attempts=$((attempts+1))
+      echo "Connection failed. Server might still be starting up."
+    elif [[ "$http_code" == "200" ]]; then
       echo "API server is ready."
       is_ready=true
+    elif [[ "$http_code" == "503" ]]; then
+      attempts=$((attempts+1))
+      echo "API server returned 503 Service Unavailable. Server is up but not ready yet."
+      # Inspect response body for more information
+      if [[ -s "$temp_body" ]]; then
+        echo "Response body: $(cat "$temp_body")"
+      fi
     else
       attempts=$((attempts+1))
-      echo "API server not ready yet. Attempt ${attempts}/${MAX_HEALTH_CHECK_RETRIES}. HTTP response: $response"
+      echo "API server not ready yet. HTTP response: $http_code"
+      # Print headers for debugging
+      if [[ -s "$temp_headers" ]]; then
+        echo "Response headers: $(cat "$temp_headers")"
+      fi
+    fi
+    
+    # Clean up temp files
+    rm -f "$temp_headers" "$temp_body"
+    
+    if [[ "$is_ready" == "false" && $attempts -lt $MAX_HEALTH_CHECK_RETRIES ]]; then
+      echo "Waiting ${HEALTH_CHECK_INTERVAL} seconds before next attempt..."
       sleep $HEALTH_CHECK_INTERVAL
     fi
   done
 
   if [[ "$is_ready" == "false" ]]; then
     echo "ERROR: API server did not become ready in the allocated time"
+    # Check if Docker containers are running
+    echo "Docker container status:"
+    docker-compose -f "$DOCKER_COMPOSE_PATH" ps
     exit 1
   fi
 
