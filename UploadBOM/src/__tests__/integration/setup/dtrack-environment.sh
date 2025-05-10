@@ -46,8 +46,20 @@ wait_for_api_server() {
   local is_ready=false
   local attempts=0
 
+  # Check Docker container health status
+  echo "Initial container status:"
+  docker-compose -f "$DOCKER_COMPOSE_PATH" ps
+
+  # Increase timeout for containers still in "health: starting" state
+  local MAX_HEALTH_CHECK_RETRIES=60  # Increased from 30
+
   while [[ "$is_ready" == "false" && $attempts -lt $MAX_HEALTH_CHECK_RETRIES ]]; do
-    # Use -o to save response body and -D to save headers
+    # Check container health every 5 attempts
+    if (( attempts % 5 == 0 )); then
+      echo "Container status check:"
+      docker-compose -f "$DOCKER_COMPOSE_PATH" ps
+    fi
+    
     set +e
     local temp_headers=$(mktemp)
     local temp_body=$(mktemp)
@@ -57,29 +69,20 @@ wait_for_api_server() {
     
     echo "Attempt ${attempts}/${MAX_HEALTH_CHECK_RETRIES}: HTTP code: $http_code, curl exit code: $curl_exit_code"
     
-    if [[ "$curl_exit_code" -ne 0 ]]; then
-      attempts=$((attempts+1))
-      echo "Connection failed. Server might still be starting up."
-    elif [[ "$http_code" == "200" ]]; then
+    if [[ "$http_code" == "200" ]]; then
       echo "API server is ready."
       is_ready=true
     elif [[ "$http_code" == "503" ]]; then
       attempts=$((attempts+1))
-      echo "API server returned 503 Service Unavailable. Server is up but not ready yet."
-      # Inspect response body for more information
+      echo "API server returned 503 Service Unavailable. Container health likely still 'starting'."
       if [[ -s "$temp_body" ]]; then
         echo "Response body: $(cat "$temp_body")"
       fi
     else
       attempts=$((attempts+1))
       echo "API server not ready yet. HTTP response: $http_code"
-      # Print headers for debugging
-      if [[ -s "$temp_headers" ]]; then
-        echo "Response headers: $(cat "$temp_headers")"
-      fi
     fi
     
-    # Clean up temp files
     rm -f "$temp_headers" "$temp_body"
     
     if [[ "$is_ready" == "false" && $attempts -lt $MAX_HEALTH_CHECK_RETRIES ]]; then
@@ -90,14 +93,15 @@ wait_for_api_server() {
 
   if [[ "$is_ready" == "false" ]]; then
     echo "ERROR: API server did not become ready in the allocated time"
-    # Check if Docker containers are running
-    echo "Docker container status:"
+    echo "Final Docker container status:"
     docker-compose -f "$DOCKER_COMPOSE_PATH" ps
+    echo "Container logs:"
+    docker-compose -f "$DOCKER_COMPOSE_PATH" logs --tail=100
     exit 1
   fi
 
   # Additional delay to ensure everything is fully initialized
-  sleep 2
+  sleep 5
 }
 
 # Setup authentication and get API key
