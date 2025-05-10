@@ -8,5 +8,6 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - "./dtrack-data/.dependency-track:/data/.dependency-track"
+      - ${DATA_DIR:-.}/dtrack-data:/data
+    user: "1000:1000"  # Set user:group to match host permissions
     restart: unless-stopped

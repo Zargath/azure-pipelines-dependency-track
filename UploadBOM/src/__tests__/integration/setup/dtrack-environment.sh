@@ -162,6 +162,10 @@ start_dependency_track() {
 
   # Create data directory if it doesn't exist
   mkdir -p "${DATA_DIR}"
+  
+  # Set proper permissions on data directory
+  echo "Setting correct permissions on data directory..."
+  chmod -R 777 "${DATA_DIR}"
 
   # Generate NIST dummy data
   generate_nist_dummy_data "$DATA_DIR"
