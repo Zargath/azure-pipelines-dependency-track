@@ -42,17 +42,25 @@ generate_nist_dummy_data() {
 
 # Wait for API server to be ready
 wait_for_api_server() {
-  echo "Waiting for API server to be ready..."
+  echo "Waiting for API server (${BASE_URL}) to be ready..."
   local is_ready=false
   local attempts=0
 
   while [[ "$is_ready" == "false" && $attempts -lt $MAX_HEALTH_CHECK_RETRIES ]]; do
-    if curl -s -f "${BASE_URL}/api/version" > /dev/null 2>&1; then
+    local response
+    # Add set +e to prevent script from exiting if curl fails
+    set +e
+    response=$(curl -s -f -w "%{http_code}" -o /dev/null "${BASE_URL}/api/version" 2>&1)
+    local curl_exit_code=$?
+    # Restore errexit
+    set -e
+    
+    if [[ "$response" == "200" ]]; then
       echo "API server is ready."
       is_ready=true
     else
       attempts=$((attempts+1))
-      echo "API server not ready yet. Attempt ${attempts}/${MAX_HEALTH_CHECK_RETRIES}"
+      echo "API server not ready yet. Attempt ${attempts}/${MAX_HEALTH_CHECK_RETRIES}. HTTP response: $response"
       sleep $HEALTH_CHECK_INTERVAL
     fi
   done
