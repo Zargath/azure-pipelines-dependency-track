@@ -49,7 +49,7 @@ class DTrackClient {
   
   getProjectUUID(projectName, projectVersion) {
     return new Promise((resolve, reject) => {
-        request(`/api/v1/project/lookup?name=${projectName}&version=${projectVersion}`, {
+      request(`/api/v1/project/lookup?name=${projectName}&version=${projectVersion}`, {
         ...this.baseOptions,
         method: 'GET',
       },
@@ -168,6 +168,22 @@ class DTrackClient {
         } else {
           reject({ error, response });
         }
+      });
+    });
+  }
+
+  getProjectChildren(projId) {
+    return new Promise((resolve, reject) => {
+      request(`/api/v1/project/${projId}/children`, {
+        ...this.baseOptions,
+        method: 'GET',
+      },
+      (error, response) => {
+        if (!error && response.statusCode == 200) {
+          resolve(response.body);
+        }
+        
+        reject({ error, response });
       });
     });
   }

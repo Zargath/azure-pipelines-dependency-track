@@ -1,8 +1,12 @@
 **/node_modules
 **/dist
+**/coverage
 
 *.vsix
 .taskkey
 bom.xml
 run.cmd
 .vscode
+
+dtrack-data
+.test-api-key

@@ -4,7 +4,16 @@
   "description": "",
   "main": "task.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --config=jest.unit.config.js",
+    "test:watch": "jest --watch --config=jest.unit.config.js",
+    "test:coverage": "jest --coverage --config=jest.unit.config.js",
+    "test:integration": "jest --config=jest.integration.config.js",
+    "test:integration:watch": "jest --watch --config=jest.integration.config.js",
+    "test:integration:coverage": "jest --coverage --config=jest.integration.config.js",
+    "test:integration:docker": "npm run docker:setup && npm run test:integration && npm run docker:teardown",
+    "test:integration:docker:coverage": "npm run docker:setup && npm run test:integration:coverage && npm run docker:teardown",
+    "docker:setup": "bash src/__tests__/integration/setup/dtrack-environment.sh start",
+    "docker:teardown": "bash src/__tests__/integration/setup/dtrack-environment.sh stop",
     "build": "babel src --out-dir dist --copy-files"
   },
   "author": "",
@@ -12,13 +21,16 @@
   "dependencies": {
     "@babel/core": "^7.21.3",
     "@babel/plugin-transform-runtime": "^7.21.0",
-    "@babel/preset-env": "^7.15.6",
     "azure-pipelines-task-lib": "^4.3.1",
     "request": "^2.88.2"
   },
   "devDependencies": {
     "@babel/cli": "^7.21.0",
+    "@babel/preset-env": "^7.26.9",
     "@types/node": "^22.10.1",
-    "@types/q": "^1.5.5"
+    "@types/q": "^1.5.5",
+    "axios": "^1.9.0",
+    "babel-jest": "^29.7.0",
+    "jest": "^29.7.0"
   }
 }

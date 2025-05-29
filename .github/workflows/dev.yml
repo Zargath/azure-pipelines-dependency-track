@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   build_package:
-    name: "Build and Package Extention"
+    name: "Build and Package Extension"
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -25,6 +25,24 @@ jobs:
         npm run build
         npm prune --production
       working-directory: UploadBOM
+
+    - name: Run Tests
+      run: |
+        npm install
+        npm test
+      working-directory: UploadBOM
+
+    - name: Generate Test Coverage
+      run: |
+        npm install
+        npm run test:coverage
+      working-directory: UploadBOM
+
+    - name: Upload Coverage Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: Coverage-Report
+        path: UploadBOM/coverage
 
     - name: Update Extension information
       run: |

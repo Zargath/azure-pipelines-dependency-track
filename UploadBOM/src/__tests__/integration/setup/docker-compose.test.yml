@@ -1,0 +1,22 @@
+version: '3'
+name: "dependency-track-test"
+
+services:
+  apiserver:
+    image: dependencytrack/apiserver:${DTRACK_VERSION:-snapshot}
+    environment:
+      ALPINE_BCRYPT_ROUNDS: "4"
+      TELEMETRY_SUBMISSION_ENABLED_DEFAULT: "false"
+      ALPINE_DATABASE_MODE: "in_memory"
+    ports:
+      - "8080:8080"
+    volumes:
+      - "./dtrack-data/.dependency-track:/data/.dependency-track"
+    restart: unless-stopped
+  frontend:
+    image: dependencytrack/frontend:${DTRACK_VERSION:-snapshot}
+    environment:
+      API_BASE_URL: "http://localhost:8080"
+    ports:
+      - "8081:8080"
+    restart: unless-stopped
