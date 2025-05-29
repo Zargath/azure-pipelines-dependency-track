@@ -22,6 +22,19 @@ function getTestApiKey() {
   }
 }
 
+/**
+ * Generates a unique project name with a timestamp to avoid conflicts 
+ * when running tests multiple times
+ * 
+ * @param {string} baseName - The base name for the project
+ * @returns {string} A unique project name with timestamp
+ */
+function generateUniqueProjectName(baseName) {
+  const timestamp = new Date().getTime();
+  return `${baseName}-${timestamp}`;
+}
+
 module.exports = {
-  getTestApiKey
+  getTestApiKey,
+  generateUniqueProjectName
 };

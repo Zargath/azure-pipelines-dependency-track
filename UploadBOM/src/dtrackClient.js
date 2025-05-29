@@ -172,6 +172,22 @@ class DTrackClient {
     });
   }
 
+  getProjectChildren(projId) {
+    return new Promise((resolve, reject) => {
+      request(`/api/v1/project/${projId}/children`, {
+        ...this.baseOptions,
+        method: 'GET',
+      },
+      (error, response) => {
+        if (!error && response.statusCode == 200) {
+          resolve(response.body);
+        }
+        
+        reject({ error, response });
+      });
+    });
+  }
+
   #postBomAsync(data) {
     return new Promise((resolve, reject) => {
       request('/api/v1/bom', {
