@@ -51,7 +51,7 @@ const run = async () => {
   let token = undefined;
   
   if (params.isProjectAutoCreated) {
-    if (params.parentProjectName && params.parentProjectVersion) {
+    if (params.parentProjectName) {
       console.log(localize('BOMUploadAndCreateChildStarting', params.dtrackURI, params.projectName, params.projectVersion, params.parentProjectName, params.parentProjectVersion));
       token = await dtrackManager.uploadBomAndCreateChildProjectAsync(params.projectName, params.projectVersion, params.parentProjectName, params.parentProjectVersion, params.isLatest, bom);
     } 

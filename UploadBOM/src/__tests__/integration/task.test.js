@@ -170,7 +170,6 @@ describe('Task Integration Tests', () => {
         mockTaskLib.setInput('dtrackProjVersion', childProjectVersion);
         mockTaskLib.setInput('dtrackProjAutoCreate', 'true');
         mockTaskLib.setInput('dtrackParentProjName', parentProjectName);
-        mockTaskLib.setInput('dtrackParentProjVersion', parentProjectVersion);
         mockTaskLib.setInput('dtrackIsLatest', 'true');
         mockTaskLib.setInput('bomFilePath', testBomFilePath);
         mockTaskLib.setPathInput('bomFilePath', testBomFilePath, true, true);
