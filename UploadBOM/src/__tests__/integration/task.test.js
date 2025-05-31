@@ -151,4 +151,52 @@ describe('Task Integration Tests', () => {
         const childrenIds = childrenResponse.map(project => project.uuid);
         expect(childrenIds).toContain(childProjectId);
     });
+
+    it('should upload BOM and create a child project when parent project version is empty', async () => {
+        // Arrange
+        const parentProjectName = generateUniqueName('task-test-parent-empty-version');
+        const parentProjectVersion = '';
+        const childProjectName = generateUniqueName('task-test-child-parent-empty-version');
+        const childProjectVersion = '1.0.0';
+        
+        // First create the parent project
+        const parentProjectId = await dTrackTestFixture.createProject(parentProjectName, parentProjectVersion);
+        expect(parentProjectId).toBeTruthy();
+        
+        // Setup the task input parameters to create child project
+        mockTaskLib.setInput('dtrackURI', BASE_URL);
+        mockTaskLib.setInput('dtrackAPIKey', apiKey);
+        mockTaskLib.setInput('dtrackProjName', childProjectName);
+        mockTaskLib.setInput('dtrackProjVersion', childProjectVersion);
+        mockTaskLib.setInput('dtrackProjAutoCreate', 'true');
+        mockTaskLib.setInput('dtrackParentProjName', parentProjectName);
+        mockTaskLib.setInput('dtrackParentProjVersion', parentProjectVersion);
+        mockTaskLib.setInput('dtrackIsLatest', 'true');
+        mockTaskLib.setInput('bomFilePath', testBomFilePath);
+        mockTaskLib.setPathInput('bomFilePath', testBomFilePath, true, true);
+        mockTaskLib.setBoolInput('dtrackProjAutoCreate', true);
+        mockTaskLib.setBoolInput('dtrackIsLatest', true);
+        mockTaskLib.setStats(testBomFilePath, { isFile: () => true });
+        
+        // Run the task module
+        await run();
+        
+        // Verify the child project was created
+        const client = new DTrackClient(BASE_URL, apiKey);
+        
+        // Check that child project exists
+        const childProjectId = await client.getProjectUUID(childProjectName, childProjectVersion);
+        expect(childProjectId).toBeTruthy();
+        
+        // Check child project info
+        const childProjectInfo = await client.getProjectInfo(childProjectId);
+        expect(childProjectInfo.name).toBe(childProjectName);
+        expect(childProjectInfo.version).toBe(childProjectVersion);
+        
+        // Verify child-parent relationship
+        const childrenResponse = await dTrackTestFixture.getProjectChildren(parentProjectId);
+        
+        const childrenIds = childrenResponse.map(project => project.uuid);
+        expect(childrenIds).toContain(childProjectId);
+    });
 });
