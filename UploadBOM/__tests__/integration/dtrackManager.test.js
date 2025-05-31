@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs');
-const DTrackClient = require('../../dtrackClient').default;
-const DTrackManager = require('../../dtrackManager').default;
+const DTrackClient = require('../../src/dtrackClient').default;
+const DTrackManager = require('../../src/dtrackManager').default;
 const DTrackTestFixture = require('./setup/DTrackTestFixture');
 const { getTestApiKey, generateUniqueName } = require('./test-utils');
 

@@ -5,8 +5,7 @@
         "node": "current"
       }
     }]
-  ],
-  "plugins": [
+  ],  "plugins": [
     [
       "@babel/plugin-transform-runtime",
       {
