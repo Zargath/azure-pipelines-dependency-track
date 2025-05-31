@@ -8,8 +8,8 @@
     "test:coverage": "jest --coverage --config=jest.unit.config.js",
     "test:integration": "jest --config=jest.integration.config.js",
     "test:integration:coverage": "jest --coverage --config=jest.integration.config.js",
-    "docker:start": "bash src/__tests__/integration/setup/dtrack-environment.sh start",
-    "docker:stop": "bash src/__tests__/integration/setup/dtrack-environment.sh stop",
+    "docker:start": "bash __tests__/integration/setup/dtrack-environment.sh start",
+    "docker:stop": "bash __tests__/integration/setup/dtrack-environment.sh stop",
     "build": "babel src --out-dir dist --copy-files"
   },
   "author": "",
@@ -17,6 +17,7 @@
   "dependencies": {
     "@babel/core": "^7.21.3",
     "@babel/plugin-transform-runtime": "^7.21.0",
+    "@babel/runtime": "^7.27.4",
     "azure-pipelines-task-lib": "^4.3.1",
     "request": "^2.88.2"
   },

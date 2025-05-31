@@ -1,12 +1,12 @@
 const path = require('path');
 const fs = require('fs');
 const { getTestApiKey, generateUniqueName } = require('./test-utils');
-const DTrackClient = require('../../dtrackClient').default;
+const DTrackClient = require('../../src/dtrackClient').default;
 const mockTaskLib = require('./mocks/mockTaskLib');
 const DTrackTestFixture = require('./setup/DTrackTestFixture');
 
 // Import the run function from task.js
-const { run } = require('../../task.js');
+const { run } = require('../../src/task.js');
 
 // Mock Azure DevOps Task Library
 jest.mock('azure-pipelines-task-lib/task', () => mockTaskLib);

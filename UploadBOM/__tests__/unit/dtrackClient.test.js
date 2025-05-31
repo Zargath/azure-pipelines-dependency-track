@@ -1,4 +1,4 @@
-import DTrackClient from '../../dtrackClient';
+import DTrackClient from '../../src/dtrackClient';
 import request from 'request';
 
 jest.mock('request', () => jest.fn());
