@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const API_KEY_FILE = path.join(__dirname, 'setup/.test-api-key');
+const TEST_BOM_FILE = path.join(__dirname, 'setup/test-bom.json');
 
 function getTestApiKey() {
   try {
@@ -22,19 +23,26 @@ function getTestApiKey() {
   }
 }
 
-/**
- * Generates a unique project name with a timestamp to avoid conflicts 
- * when running tests multiple times
- * 
- * @param {string} baseName - The base name for the project
- * @returns {string} A unique project name with timestamp
- */
-function generateUniqueProjectName(baseName) {
+function generateUniqueName(baseName) {
   const timestamp = new Date().getTime();
   return `${baseName}-${timestamp}`;
 }
 
+function getTestBom() {
+  try {
+    if (!fs.existsSync(TEST_BOM_FILE)) {
+      throw new Error('Test BOM file not found at ' + TEST_BOM_FILE);
+    }
+    
+    return fs.readFileSync(TEST_BOM_FILE);
+  } catch (error) {
+    console.error('Failed to retrieve test BOM:', error.message);
+    throw error;
+  }
+}
+
 module.exports = {
   getTestApiKey,
-  generateUniqueProjectName
+  generateUniqueName,
+  getTestBom
 };

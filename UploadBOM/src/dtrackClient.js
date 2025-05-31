@@ -46,6 +46,25 @@ class DTrackClient {
     };
     return this.#postBomAsync(data);
   }
+
+  createProjectAsync(projectName, projectVersion) {
+    return new Promise((resolve, reject) => {
+      request('/api/v1/project', {
+        ...this.baseOptions,
+        method: 'POST',
+        json: {
+          "name": projectName,
+          "version": projectVersion
+        }
+      }, (error, response) => {
+        if (!error && response.statusCode === 201) {
+          resolve(response.body.uuid);
+        } else {
+          reject({ error, response });
+        }
+      });
+    });
+  }
   
   getProjectUUID(projectName, projectVersion) {
     return new Promise((resolve, reject) => {

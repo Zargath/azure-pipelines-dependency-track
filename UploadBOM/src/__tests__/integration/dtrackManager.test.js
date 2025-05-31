@@ -2,7 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const DTrackClient = require('../../dtrackClient').default;
 const DTrackManager = require('../../dtrackManager').default;
-const { getTestApiKey, generateUniqueProjectName } = require('./test-utils');
+const { getTestApiKey, generateUniqueName } = require('./test-utils');
 
 describe('DTrackManager Integration Tests - Parent and Child Projects', () => {
     const BASE_URL = 'http://localhost:8080';
@@ -28,7 +28,7 @@ describe('DTrackManager Integration Tests - Parent and Child Projects', () => {
     });
 
     it('should create a project upon BOM upload', async () => {
-        const projectName = generateUniqueProjectName('test-project');
+        const projectName = generateUniqueName('test-project');
         const projectVersion = '1.0.0';
 
         // Upload BOM and create project
@@ -59,9 +59,9 @@ describe('DTrackManager Integration Tests - Parent and Child Projects', () => {
     });
 
     it('should create a parent and child project relationship upon BOM upload', async () => {
-        const parentProjectName = generateUniqueProjectName('test-parent-project');
+        const parentProjectName = generateUniqueName('test-parent-project');
         const parentProjectVersion = '1.0.0';
-        const childProjectName = generateUniqueProjectName('test-child-project');
+        const childProjectName = generateUniqueName('test-child-project');
         const childProjectVersion = '1.0.0';
 
         // First, ensure parent project exists
