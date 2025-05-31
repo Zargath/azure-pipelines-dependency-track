@@ -61,9 +61,9 @@ describe('DTrackManager Integration Tests - Parent and Child Projects', () => {
         expect(projectInfo.version).toBe(projectVersion);
     });
 
-    it('should create a parent and child project relationship upon BOM upload', async () => {
+    it('should create a parent and child project relationship upon BOM upload when parent version is an empty string', async () => {
         const parentProjectName = generateUniqueName('test-parent-project');
-        const parentProjectVersion = '1.0.0';
+        const parentProjectVersion = '';
         const childProjectName = generateUniqueName('test-child-project');
         const childProjectVersion = '1.0.0';
 
@@ -101,9 +101,11 @@ describe('DTrackManager Integration Tests - Parent and Child Projects', () => {
 
         // Verify child-parent relationship
         // Check if the child project is in the parent's children list
-        const childrenResponse = await client.getProjectChildren(parentProjectId);
+        const childrenResponse = await dTrackTestFixture.getProjectChildren(parentProjectId);
         const childrenIds = childrenResponse.map(project => project.uuid);
 
         expect(childrenIds).toContain(childProjectId);
     });
+
+
 });

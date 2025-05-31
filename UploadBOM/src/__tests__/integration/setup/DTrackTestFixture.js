@@ -9,7 +9,7 @@ class DTrackTestFixture {
     this.baseOptions = {
       baseUrl: this.baseUrl,
       json: true,
-      headers: { 
+      headers: {
         'X-API-Key': this.apiKey
       },
       ...(this.caFile ? { ca: this.caFile } : {}),
@@ -31,14 +31,30 @@ class DTrackTestFixture {
         if (!error && (response.statusCode === 201 || response.statusCode === 200)) {
           resolve(response.body.uuid);
         } else {
-          reject({ 
-            error, 
+          reject({
+            error,
             status: response?.statusCode,
             body: response?.body,
             message: 'Failed to create parent project'
           });
         }
       });
+    });
+  }
+
+  getProjectChildren(projId) {
+    return new Promise((resolve, reject) => {
+      request(`/api/v1/project/${projId}/children`, {
+        ...this.baseOptions,
+        method: 'GET',
+      },
+        (error, response) => {
+          if (!error && response.statusCode == 200) {
+            resolve(response.body);
+          }
+
+          reject({ error, response });
+        });
     });
   }
 }
