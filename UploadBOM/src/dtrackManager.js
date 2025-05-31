@@ -101,7 +101,8 @@ class DtrackManager {
 
   async uploadBomAndCreateChildProjectAsync(name, version, parentName, parentVersion, isLatest, bom) {
     try {
-      const token = await this.dtrackClient.uploadBomAndCreateChildProjectAsync(name, version, parentName, parentVersion, isLatest, bom);
+      const parentUuid = await this.getProjetUUID(parentName, parentVersion);
+      const token = await this.dtrackClient.uploadBomAndCreateChildProjectAsync(name, version, parentUuid, isLatest, bom);
       return token;
     }
     catch (err) {

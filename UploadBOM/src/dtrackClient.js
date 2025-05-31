@@ -34,13 +34,12 @@ class DTrackClient {
     return this.#postBomAsync(data);
   }
   
-  uploadBomAndCreateChildProjectAsync(name, version, parentName, parentVersion, isLatest, bom) {
+  uploadBomAndCreateChildProjectAsync(name, version, parentUuid, isLatest, bom) {
     const data = {
       "autoCreate": 'true',
       "projectName": name,
       "projectVersion": version,
-      "parentName": parentName,
-      "parentVersion": parentVersion,
+      "parentUUID": parentUuid,
       "isLatest": String(isLatest),
       "bom": bom.toString()
     };
@@ -67,6 +66,10 @@ class DTrackClient {
   }
   
   getProjectUUID(projectName, projectVersion) {
+    if (!projectVersion) {
+      return this.getProjectUUIDByName(projectName);
+    }
+
     return new Promise((resolve, reject) => {
       request(`/api/v1/project/lookup?name=${projectName}&version=${projectVersion}`, {
         ...this.baseOptions,
@@ -79,6 +82,31 @@ class DTrackClient {
 
           if(response.body){
             projectUUID = response.body.uuid;
+          }
+
+          resolve(projectUUID)
+        }
+        reject({ error, response });
+      });
+    });
+  }
+
+  getProjectUUIDByName(projectName) {
+    return new Promise((resolve, reject) => {
+      request(`/api/v1/project?name=${projectName}`, {
+        ...this.baseOptions,
+        method: 'GET',
+      },
+      (error, response) => {
+        if (!error && response.statusCode == 200) {          
+          const totalCount = response.headers['x-total-count'];
+          if(totalCount > 1){
+            reject({ error: new Error('Multiple projects found with the same name. Please specify a version.') }); 
+          }
+          
+          let projectUUID = ''
+          if(response.body){
+            projectUUID = response.body[0].uuid;
           }
 
           resolve(projectUUID)
