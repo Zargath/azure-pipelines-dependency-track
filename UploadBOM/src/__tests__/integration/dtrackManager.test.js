@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const DTrackClient = require('../../dtrackClient').default;
 const DTrackManager = require('../../dtrackManager').default;
+const DTrackTestFixture = require('./setup/DTrackTestFixture');
 const { getTestApiKey, generateUniqueName } = require('./test-utils');
 
 describe('DTrackManager Integration Tests - Parent and Child Projects', () => {
@@ -10,6 +11,7 @@ describe('DTrackManager Integration Tests - Parent and Child Projects', () => {
     let dtrackManager;
     let apiKey;
     let testBom;
+    let dTrackTestFixture;
 
     beforeAll(() => {
         try {
@@ -17,6 +19,7 @@ describe('DTrackManager Integration Tests - Parent and Child Projects', () => {
             apiKey = getTestApiKey();
             client = new DTrackClient(BASE_URL, apiKey);
             dtrackManager = new DTrackManager(client);
+            dTrackTestFixture = new DTrackTestFixture(BASE_URL, apiKey);
 
             // Load test BOM file
             const bomPath = path.join(__dirname, 'setup/test-bom.json');
@@ -64,20 +67,8 @@ describe('DTrackManager Integration Tests - Parent and Child Projects', () => {
         const childProjectName = generateUniqueName('test-child-project');
         const childProjectVersion = '1.0.0';
 
-        // First, ensure parent project exists
-        const parentToken = await dtrackManager.uploadBomAndCreateProjectAsync(
-            parentProjectName,
-            parentProjectVersion,
-            testBom
-        );
-        await dtrackManager.waitBomProcessing(parentToken);
-        const parentProjectId = await dtrackManager.getProjetUUID(
-            parentProjectName,
-            parentProjectVersion
-        );
-
-        // Verify parent exists
-        expect(parentProjectId).toBeTruthy();
+        // Create parent project
+        const parentProjectId =await dTrackTestFixture.createProject(parentProjectName, parentProjectVersion);
 
         // Upload BOM and create child project
         const token = await dtrackManager.uploadBomAndCreateChildProjectAsync(
