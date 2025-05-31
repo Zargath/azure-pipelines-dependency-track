@@ -51,7 +51,7 @@ const run = async () => {
   let token = undefined;
   
   if (params.isProjectAutoCreated) {
-    if (params.parentProjectName && params.parentProjectVersion) {
+    if (params.parentProjectName) {
       console.log(localize('BOMUploadAndCreateChildStarting', params.dtrackURI, params.projectName, params.projectVersion, params.parentProjectName, params.parentProjectVersion));
       token = await dtrackManager.uploadBomAndCreateChildProjectAsync(params.projectName, params.projectVersion, params.parentProjectName, params.parentProjectVersion, params.isLatest, bom);
     } 
@@ -114,14 +114,20 @@ const run = async () => {
   }
 };
 
-run().then(
-  () => {
-    console.log(localize('TaskSucceed'));
-    process.exit(0);
-  },
-  err => {
-    console.error(localize('TaskFailed', err));
-    tl.setResult(tl.TaskResult.Failed, err.message);
-    process.exit(1);
-  }
-);
+// Only auto-run in production environment, not during tests
+if (process.env.NODE_ENV !== 'test') {
+  run().then(
+    () => {
+      console.log(localize('TaskSucceed'));
+      process.exit(0);
+    },
+    err => {
+      console.error(localize('TaskFailed', err));
+      tl.setResult(tl.TaskResult.Failed, err.message);
+      process.exit(1);
+    }
+  );
+}
+
+// Export run function for testing
+export { run };

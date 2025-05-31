@@ -5,15 +5,11 @@
   "main": "task.js",
   "scripts": {
     "test": "jest --config=jest.unit.config.js",
-    "test:watch": "jest --watch --config=jest.unit.config.js",
     "test:coverage": "jest --coverage --config=jest.unit.config.js",
     "test:integration": "jest --config=jest.integration.config.js",
-    "test:integration:watch": "jest --watch --config=jest.integration.config.js",
     "test:integration:coverage": "jest --coverage --config=jest.integration.config.js",
-    "test:integration:docker": "npm run docker:setup && npm run test:integration && npm run docker:teardown",
-    "test:integration:docker:coverage": "npm run docker:setup && npm run test:integration:coverage && npm run docker:teardown",
-    "docker:setup": "bash src/__tests__/integration/setup/dtrack-environment.sh start",
-    "docker:teardown": "bash src/__tests__/integration/setup/dtrack-environment.sh stop",
+    "docker:start": "bash src/__tests__/integration/setup/dtrack-environment.sh start",
+    "docker:stop": "bash src/__tests__/integration/setup/dtrack-environment.sh stop",
     "build": "babel src --out-dir dist --copy-files"
   },
   "author": "",
