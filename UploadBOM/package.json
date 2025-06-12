@@ -18,7 +18,7 @@
     "@babel/core": "^7.21.3",
     "@babel/plugin-transform-runtime": "^7.21.0",
     "@babel/runtime": "^7.27.4",
-    "azure-pipelines-task-lib": "^4.3.1",
+    "azure-pipelines-task-lib": "^5.2.1",
     "request": "^2.88.2"
   },
   "devDependencies": {
