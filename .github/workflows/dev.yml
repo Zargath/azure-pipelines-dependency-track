@@ -2,6 +2,9 @@ name: CI/CD - Development
 
 on:
   pull_request:
+    # Skip this workflow for Dependabot PRs
+    branches-ignore:
+      - 'dependabot/**'
 
 jobs:
   build_package:
