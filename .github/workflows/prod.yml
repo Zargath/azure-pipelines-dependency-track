@@ -8,6 +8,8 @@ jobs:
   build_package:
     name: "Build and Package Extention"
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
     - uses: actions/checkout@v4
       
@@ -46,6 +48,9 @@ jobs:
     name: "Publish to VS Marketplace"
     needs: build_package
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps: 
       - uses: actions/checkout@v4
         
