@@ -1,5 +1,9 @@
 name: CI/CD - Development
 
+permissions:
+  contents: read
+  packages: write
+
 on:
   pull_request:
     # Skip this workflow for Dependabot PRs
