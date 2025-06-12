@@ -1,0 +1,61 @@
+name: Dependabot - Pull Request Workflow
+
+permissions:
+  contents: read
+  actions: write
+
+on:
+  pull_request:
+    branches:
+      - 'dependabot/**'
+
+jobs:
+  build_and_test:
+    name: "Build and Test"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      
+    - name: Use Node.js 20.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+      
+    - name: Install Task Dependencies 
+      run: |
+        npm install -g tfx-cli@0.18.0
+        tfx --version
+
+    - name: Build UploadBOM Task
+      run: |
+        npm install
+        npm run build
+        npm prune --production
+      working-directory: UploadBOM
+
+    - name: Run Unit Tests
+      run: |
+        npm install
+        npm test
+      working-directory: UploadBOM
+
+    - name: Generate Test Coverage
+      run: |
+        npm install
+        npm run test:coverage
+      working-directory: UploadBOM
+
+    - name: Upload Coverage Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: Coverage-Report
+        path: UploadBOM/coverage
+        
+    - name: Package Extension
+      run: tfx extension create --output-path PackageOutput
+    
+    - name: Upload Extension Package Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Extension-Package
+        path: PackageOutput
