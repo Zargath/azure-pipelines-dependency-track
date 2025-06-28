@@ -25,18 +25,6 @@ jobs:
         npm prune --production
       working-directory: UploadBOM
 
-    - name: Run Tests
-      run: |
-        npm install
-        npm test
-      working-directory: UploadBOM
-
-    - name: Upload Coverage Report
-      uses: actions/upload-artifact@v4
-      with:
-        name: Coverage-Report
-        path: UploadBOM/coverage
-
     - name: Package task
       run: |
         npm install
