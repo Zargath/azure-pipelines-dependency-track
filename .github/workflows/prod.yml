@@ -6,7 +6,7 @@ on:
 
 jobs:
   build_package:
-    name: "Build and Package Extention"
+    name: "Build and Package Extension"
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -17,26 +17,33 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: 20.x
-      
-    - name: Install Task Dependencies 
-      run: |
-        npm install -g tfx-cli@0.18.0
-        tfx --version
 
-    - name: Build UploadBOM Task
+    - name: Build UploadBOM
       run: |
         npm install
         npm run build
         npm prune --production
       working-directory: UploadBOM
 
-    - name: Update Extension information
+    - name: Run Tests
       run: |
         npm install
-        node version-bump.js --token ${{ secrets.marketplace_access_token }} --release-type prod
-    
+        npm test
+      working-directory: UploadBOM
+
+    - name: Upload Coverage Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: Coverage-Report
+        path: UploadBOM/coverage
+
     - name: Package task
-      run: tfx extension create --output-path PackageOutput
+      run: |
+        npm install
+        npm install -g tfx-cli@latest
+        tfx --version
+        node version-bump.js --token ${{ secrets.marketplace_access_token }} --release-type prod
+        tfx extension create --output-path PackageOutput
     
     - name: Upload vsix Artifact
       uses: actions/upload-artifact@v4
@@ -61,7 +68,7 @@ jobs:
         
       - name: Install Dependencies 
         run: |
-          npm install -g tfx-cli@0.18.0
+          npm install -g tfx-cli@latest
           tfx --version
 
       - name: Download artifact
