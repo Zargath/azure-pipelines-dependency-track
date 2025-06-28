@@ -5,9 +5,7 @@
   "main": "task.js",
   "scripts": {
     "test": "jest --config=jest.unit.config.js",
-    "test:coverage": "jest --coverage --config=jest.unit.config.js",
     "test:integration": "jest --config=jest.integration.config.js",
-    "test:integration:coverage": "jest --coverage --config=jest.integration.config.js",
     "docker:start": "bash __tests__/integration/setup/dtrack-environment.sh start",
     "docker:stop": "bash __tests__/integration/setup/dtrack-environment.sh stop",
     "build": "babel src --out-dir dist --copy-files"

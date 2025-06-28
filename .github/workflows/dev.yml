@@ -6,9 +6,6 @@ permissions:
 
 on:
   pull_request:
-    # Skip this workflow for Dependabot PRs
-    branches-ignore:
-      - 'dependabot/**'
 
 jobs:
   build_package:
@@ -21,13 +18,8 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: 20.x
-      
-    - name: Install Task Dependencies 
-      run: |
-        npm install -g tfx-cli@0.18.0
-        tfx --version
 
-    - name: Build UploadBOM Task
+    - name: Build UploadBOM
       run: |
         npm install
         npm run build
@@ -36,14 +28,7 @@ jobs:
 
     - name: Run Tests
       run: |
-        npm install
         npm test
-      working-directory: UploadBOM
-
-    - name: Generate Test Coverage
-      run: |
-        npm install
-        npm run test:coverage
       working-directory: UploadBOM
 
     - name: Upload Coverage Report
@@ -52,15 +37,17 @@ jobs:
         name: Coverage-Report
         path: UploadBOM/coverage
 
-    - name: Update Extension information
+    - name: Package task
+      if: ${{ ! startsWith(github.head_ref, 'dependabot/') }}
       run: |
         npm install
+        npm install -g tfx-cli@latest
+        tfx --version
         node version-bump.js --token ${{ secrets.marketplace_access_token }} --release-type dev
-    
-    - name: Package task
-      run: tfx extension create --output-path PackageOutput
+        tfx extension create --output-path PackageOutput
     
     - name: Upload vsix Artifact
+      if: ${{ ! startsWith(github.head_ref, 'dependabot/') }}
       uses: actions/upload-artifact@v4
       with:
         name: Extension-Package
@@ -68,6 +55,7 @@ jobs:
   
   publish_marketplace:
     name: "Publish to VS Marketplace"
+    if: ${{ ! startsWith(github.head_ref, 'dependabot/') }}
     needs: build_package
     runs-on: ubuntu-latest
     steps: 
@@ -80,7 +68,7 @@ jobs:
         
       - name: Install Dependencies 
         run: |
-          npm install -g tfx-cli@0.18.0
+          npm install -g tfx-cli@latest
           tfx --version
 
       - name: Download artifact
