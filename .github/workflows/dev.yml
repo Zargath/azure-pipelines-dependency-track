@@ -28,6 +28,7 @@ jobs:
 
     - name: Run Tests
       run: |
+        npm install
         npm test
       working-directory: UploadBOM
 
