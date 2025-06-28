@@ -118,7 +118,7 @@ class DTrackClient {
 
   pullProcessingStatusAsync(token) {
     return new Promise((resolve, reject) => {
-      request(`/api/v1/bom/token/${token}`, {
+      request(`/api/v1/event/token/${token}`, {
         ...this.baseOptions,
         method: 'GET',
       },
