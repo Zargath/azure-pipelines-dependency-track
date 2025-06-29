@@ -245,4 +245,46 @@ describe('Task Integration Tests', () => {
         const childrenIds = childrenResponse.map(project => project.uuid);
         expect(childrenIds).toContain(childProjectId);
     });
+
+    it('should upload BOM to an existing project and wait for processing to complete', async () => {
+        // Arrange
+        const projectName = generateUniqueName('task-test-existing-project');
+        const projectVersion = '1.0.0';
+        
+        // First create the project
+        const projectId = await dTrackTestFixture.createProject(projectName, projectVersion);
+        expect(projectId).toBeTruthy();
+
+        const client = new DTrackClient(BASE_URL, apiKey);
+        const initialLastOccurrence = await client.getLastMetricCalculationDate(projectId);
+        
+        // Setup the task input parameters to upload to existing project
+        mockTaskLib.setInput('dtrackURI', BASE_URL);
+        mockTaskLib.setInput('dtrackAPIKey', apiKey);
+        mockTaskLib.setInput('dtrackProjId', projectId);
+        mockTaskLib.setInput('thresholdAction', 'warn');
+        mockTaskLib.setInput('thresholdCritical', '1');
+        mockTaskLib.setPathInput('bomFilePath', testBomFilePath, true, true);
+        mockTaskLib.setStats(testBomFilePath, { isFile: () => true });
+        
+        // Run the task module
+        await run();
+        
+        // Get project info and metrics
+        const projectInfo = await client.getProjectInfo(projectId);
+        const newLastOccurrence = await client.getLastMetricCalculationDate(projectId);
+        
+        expect(projectInfo.lastBomImport).toBeTruthy();
+        expect(newLastOccurrence).toBeTruthy();
+        
+        // Check that the initial last occurrence was the default value before upload
+        expect(new Date(initialLastOccurrence).getTime()).toBe(new Date(0).getTime());
+
+        // Check that the lastBomImport is after the initial last occurrence
+        expect(new Date(projectInfo.lastBomImport).getTime()).toBeGreaterThan(new Date(initialLastOccurrence).getTime());
+
+        // Check that the new last occurrence is after the lastBomImport and the initial last occurrence
+        expect(new Date(newLastOccurrence).getTime()).toBeGreaterThanOrEqual(new Date(projectInfo.lastBomImport).getTime());
+        expect(new Date(newLastOccurrence).getTime()).toBeGreaterThan(new Date(initialLastOccurrence).getTime());
+    });
 });

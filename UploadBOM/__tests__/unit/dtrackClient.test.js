@@ -86,7 +86,7 @@ describe('DTrackClient', () => {
     // Assert
     expect(result).toEqual(isProcessing);
     expect(request).toHaveBeenCalledWith(
-      `/api/v1/bom/token/${token}`,
+      `/api/v1/event/token/${token}`,
       expect.objectContaining({
         method: 'GET',
         headers: { 'X-API-Key': apiKey }
