@@ -1,4 +1,3 @@
-import { json } from 'stream/consumers';
 import DTrackClient from '../../src/dtrackClient';
 import request from 'request';
 
