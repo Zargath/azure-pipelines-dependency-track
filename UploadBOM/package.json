@@ -13,7 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@babel/core": "^7.21.3",
+    "@babel/core": "^7.27.7",
     "@babel/plugin-transform-runtime": "^7.21.0",
     "@babel/runtime": "^7.27.6",
     "azure-pipelines-task-lib": "^5.2.1",
