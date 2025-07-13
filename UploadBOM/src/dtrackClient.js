@@ -1,4 +1,4 @@
-import request from 'request'
+import axios from 'axios'
 
 class DTrackClient {
   constructor(url, apiKey, caFile) {
@@ -6,14 +6,14 @@ class DTrackClient {
     this.apiKey = apiKey;
     this.caFile = caFile;
 
-    this.baseOptions = {
-      baseUrl: this.baseUrl,
-      json: true,
+    // Create axios instance with common configuration
+    this.axiosInstance = axios.create({
+      baseURL: this.baseUrl,
       headers: { 
         'X-API-Key': this.apiKey
       },
-      ...(this.caFile ? { ca: this.caFile } : {}),
-    }
+      ...(this.caFile ? { httpsAgent: new (require('https').Agent)({ ca: this.caFile }) } : {}),
+    });
   }
 
   uploadBomAsync(projId, bom) {
@@ -46,193 +46,178 @@ class DTrackClient {
     return this.#postBomAsync(data);
   }
 
-  createProjectAsync(projectName, projectVersion) {
-    return new Promise((resolve, reject) => {
-      request('/api/v1/project', {
-        ...this.baseOptions,
-        method: 'POST',
-        json: {
-          "name": projectName,
-          "version": projectVersion
-        }
-      }, (error, response) => {
-        if (!error && response.statusCode === 201) {
-          resolve(response.body.uuid);
-        } else {
-          reject({ error, response });
-        }
+  async createProjectAsync(projectName, projectVersion) {
+    try {
+      const response = await this.axiosInstance.post('/api/v1/project', {
+        "name": projectName,
+        "version": projectVersion
       });
-    });
+      
+      if (response.status === 201) {
+        return response.data.uuid;
+      } else {
+        throw new Error(`Unexpected status code: ${response.status}`);
+      }
+    } catch (error) {
+      throw { error, response: error.response };
+    }
   }
   
-  getProjectUUID(projectName, projectVersion) {
+  async getProjectUUID(projectName, projectVersion) {
     if (!projectVersion) {
       return this.getProjectUUIDByName(projectName);
     }
 
-    return new Promise((resolve, reject) => {
-      request(`/api/v1/project/lookup?name=${projectName}&version=${projectVersion}`, {
-        ...this.baseOptions,
-        method: 'GET',
-      },
-      (error, response) => {
-        if (!error && response.statusCode == 200) {
-
-          let projectUUID = ''
-
-          if(response.body){
-            projectUUID = response.body.uuid;
-          }
-
-          resolve(projectUUID)
+    try {
+      const response = await this.axiosInstance.get(`/api/v1/project/lookup?name=${projectName}&version=${projectVersion}`);
+      
+      if (response.status === 200) {
+        let projectUUID = '';
+        if(response.data){
+          projectUUID = response.data.uuid;
         }
-        reject({ error, response });
-      });
-    });
-  }
-
-  getProjectUUIDByName(projectName) {
-    return new Promise((resolve, reject) => {
-      request(`/api/v1/project?name=${projectName}`, {
-        ...this.baseOptions,
-        method: 'GET',
-      },
-      (error, response) => {
-        if (!error && response.statusCode == 200) {          
-          const totalCount = response.headers['x-total-count'];
-          if(totalCount > 1){
-            reject({ error: new Error('Multiple projects found with the same name. Please specify a version.') }); 
-          }
-          
-          let projectUUID = ''
-          if(response.body){
-            projectUUID = response.body[0].uuid;
-          }
-
-          resolve(projectUUID)
-        }
-        reject({ error, response });
-      });
-    });
-  }
-
-  pullProcessingStatusAsync(token) {
-    return new Promise((resolve, reject) => {
-      request(`/api/v1/event/token/${token}`, {
-        ...this.baseOptions,
-        method: 'GET',
-      },
-        (error, response) => {
-          if (!error && response.statusCode == 200) {
-            resolve(response.body.processing);
-          }
-
-          reject({ error, response });
-        });
-    });
-  }
-
-  getProjectMetricsAsync(projId) {
-    return new Promise((resolve, reject) => {
-      request(`/api/v1/metrics/project/${projId}/current`, {
-        ...this.baseOptions,
-        method: 'GET',
-      },
-      (error, response) => {
-        if (!error && response.statusCode == 200) {
-          resolve(response.body);
-        }
-        
-        reject({ error, response });
-      });
-    });
-  }
-
-  getLastMetricCalculationDate(projId) {
-    return new Promise((resolve, reject) => {
-      request(`/api/v1/metrics/project/${projId}/current`, {
-        ...this.baseOptions,
-        method: 'GET',
-      },
-      (error, response) => {
-        if (!error && response.statusCode == 200) {
-          
-          let lastOccurrence = new Date(0);
-
-          // Dependency Track might return an empty response body if metrics have never been calculated before.
-          if(response.body) {
-            lastOccurrence = new Date(response.body.lastOccurrence);
-          } 
-
-          resolve(lastOccurrence);
-        }
-        
-        reject({ error, response });
-      });
-    });
-  }
-
-  getProjectInfo(projId) {
-    return new Promise((resolve, reject) => {
-      request(`/api/v1/project/${projId}`, {
-        ...this.baseOptions,
-        method: 'GET',
-      },
-      (error, response) => {
-        if (!error && response.statusCode == 200) {
-          resolve(response.body);
-        }
-        
-        reject({ error, response });
-      });
-    });
-  }
-
-  updateProject(projId, description, classifier, swidTagId, group, tags) {
-    return new Promise((resolve, reject) => {
-      const data = {
-        "description": description,
-        "classifier": classifier,
-        "swidTagId": swidTagId,
-        "group": group,
-        "tags": tags,
+        return projectUUID;
       }
-
-      // Remove properties with null values
-      Object.keys(data).forEach(key => {
-        if (data[key] == null) {
-          delete data[key];
-        }
-      });
-
-      request(`/api/v1/project/${projId}`, {
-        ...this.baseOptions,
-        method: 'PATCH',
-        json: data
-      }, (error, response) => {
-        if (!error && response.statusCode === 200) {
-          resolve(response.body);
-        } else {
-          reject({ error, response });
-        }
-      });
-    });
+      throw new Error(`Unexpected status code: ${response.status}`);
+    } catch (error) {
+      throw { error, response: error.response };
+    }
   }
 
-  #postBomAsync(data) {
-    return new Promise((resolve, reject) => {
-      request('/api/v1/bom', {
-        ...this.baseOptions,
-        method: 'POST',
-        formData: data
-      }, (error, response) => {
-        if (!error && response.statusCode === 200) {
-          resolve(response.body.token);
-        } else {
-          reject({ error, response });
+  async getProjectUUIDByName(projectName) {
+    try {
+      const response = await this.axiosInstance.get(`/api/v1/project?name=${projectName}`);
+      
+      if (response.status === 200) {
+        const totalCount = response.headers['x-total-count'];
+        if(totalCount > 1){
+          throw { error: new Error('Multiple projects found with the same name. Please specify a version.') }; 
+        }
+        
+        let projectUUID = '';
+        if(response.data){
+          projectUUID = response.data[0].uuid;
+        }
+        return projectUUID;
+      }
+      throw new Error(`Unexpected status code: ${response.status}`);
+    } catch (error) {
+      throw { error, response: error.response };
+    }
+  }
+
+  async pullProcessingStatusAsync(token) {
+    try {
+      const response = await this.axiosInstance.get(`/api/v1/event/token/${token}`);
+      
+      if (response.status === 200) {
+        return response.data.processing;
+      }
+      throw new Error(`Unexpected status code: ${response.status}`);
+    } catch (error) {
+      throw { error, response: error.response };
+    }
+  }
+
+  async getProjectMetricsAsync(projId) {
+    try {
+      const response = await this.axiosInstance.get(`/api/v1/metrics/project/${projId}/current`);
+      
+      if (response.status === 200) {
+        return response.data;
+      }
+      throw new Error(`Unexpected status code: ${response.status}`);
+    } catch (error) {
+      throw { error, response: error.response };
+    }
+  }
+
+  async getLastMetricCalculationDate(projId) {
+    try {
+      const response = await this.axiosInstance.get(`/api/v1/metrics/project/${projId}/current`);
+      
+      if (response.status === 200) {
+        let lastOccurrence = new Date(0);
+
+        // Dependency Track might return an empty response body if metrics have never been calculated before.
+        if(response.data) {
+          lastOccurrence = new Date(response.data.lastOccurrence);
+        } 
+
+        return lastOccurrence;
+      }
+      throw new Error(`Unexpected status code: ${response.status}`);
+    } catch (error) {
+      throw { error, response: error.response };
+    }
+  }
+
+  async getProjectInfo(projId) {
+    try {
+      const response = await this.axiosInstance.get(`/api/v1/project/${projId}`);
+      
+      if (response.status === 200) {
+        return response.data;
+      }
+      throw new Error(`Unexpected status code: ${response.status}`);
+    } catch (error) {
+      throw { error, response: error.response };
+    }
+  }
+
+  async updateProject(projId, description, classifier, swidTagId, group, tags) {
+    const data = {
+      "description": description,
+      "classifier": classifier,
+      "swidTagId": swidTagId,
+      "group": group,
+      "tags": tags,
+    }
+
+    // Remove properties with null values
+    Object.keys(data).forEach(key => {
+      if (data[key] == null) {
+        delete data[key];
+      }
+    });
+
+    try {
+      const response = await this.axiosInstance.patch(`/api/v1/project/${projId}`, data);
+      
+      if (response.status === 200) {
+        return response.data;
+      } else {
+        throw new Error(`Unexpected status code: ${response.status}`);
+      }
+    } catch (error) {
+      throw { error, response: error.response };
+    }
+  }
+
+  async #postBomAsync(data) {
+    try {
+      const FormData = require('form-data');
+      const formData = new FormData();
+      
+      // Add each property to the form data
+      Object.keys(data).forEach(key => {
+        formData.append(key, data[key]);
+      });
+
+      const response = await this.axiosInstance.post('/api/v1/bom', formData, {
+        headers: {
+          ...formData.getHeaders(),
         }
       });
-    });
+      
+      if (response.status === 200) {
+        return response.data.token;
+      } else {
+        throw new Error(`Unexpected status code: ${response.status}`);
+      }
+    } catch (error) {
+      throw { error, response: error.response };
+    }
   }
 }
 export default DTrackClient;

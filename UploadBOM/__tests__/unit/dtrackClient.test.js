@@ -1,13 +1,29 @@
 import DTrackClient from '../../src/dtrackClient';
-import request from 'request';
+import axios from 'axios';
 
-jest.mock('request', () => jest.fn());
+jest.mock('axios', () => ({
+  create: jest.fn(() => ({
+    get: jest.fn(),
+    post: jest.fn(),
+    patch: jest.fn(),
+    put: jest.fn(),
+  }))
+}));
 
 describe('DTrackClient', () => {
   let client;
+  let mockAxiosInstance;
   const apiKey = '';
 
   beforeEach(() => {
+    mockAxiosInstance = {
+      get: jest.fn(),
+      post: jest.fn(),
+      patch: jest.fn(),
+      put: jest.fn(),
+    };
+    
+    axios.create.mockReturnValue(mockAxiosInstance);
     client = new DTrackClient('http://localhost:8080', apiKey);
 
     jest.clearAllMocks();
@@ -16,8 +32,9 @@ describe('DTrackClient', () => {
   it('should get project info successfully', async () => {
     // Arrange
     const projectId = '123e4567-e89b-12d3-a456-426614174000';
-    request.mockImplementation((url, options, callback) => {
-      callback(null, { statusCode: 200, body: { uuid: projectId } });
+    mockAxiosInstance.get.mockResolvedValue({
+      status: 200,
+      data: { uuid: projectId }
     });
 
     // Act
@@ -25,27 +42,20 @@ describe('DTrackClient', () => {
 
     // Assert
     expect(result).toEqual({ uuid: projectId });
-    expect(request).toHaveBeenCalledWith(
-      `/api/v1/project/${projectId}`,
-      expect.objectContaining({
-        method: 'GET',
-        headers: { 'X-API-Key': apiKey }
-      }),
-      expect.any(Function)
-    );
+    expect(mockAxiosInstance.get).toHaveBeenCalledWith(`/api/v1/project/${projectId}`);
   });
 
   it('should handle errors when getting project info', async () => {
     // Arrange
-    request.mockImplementation((url, options, callback) => {
-      callback('Not Found', { statusCode: 404 });
-    });
+    const error = new Error('Not Found');
+    error.response = { status: 404 };
+    mockAxiosInstance.get.mockRejectedValue(error);
 
     // Act
     const promise = client.getProjectInfo('123e4567-e89b-12d3-a456-426614174000');
 
     // Assert
-    await expect(promise).rejects.toEqual({ error: 'Not Found', response: { statusCode: 404 } });
+    await expect(promise).rejects.toEqual({ error, response: error.response });
   });
 
   it('should get project uuid successfully', async () => {
@@ -53,8 +63,9 @@ describe('DTrackClient', () => {
     const projectName = 'ProjectName';
     const projectVersion = '1.0.0';
     const projectId = '123e4567-e89b-12d3-a456-426614174000';
-    request.mockImplementation((url, options, callback) => {
-      callback(null, { statusCode: 200, body: { uuid: projectId } });
+    mockAxiosInstance.get.mockResolvedValue({
+      status: 200,
+      data: { uuid: projectId }
     });
 
     // Act
@@ -62,22 +73,16 @@ describe('DTrackClient', () => {
 
     // Assert
     expect(result).toEqual(projectId);
-    expect(request).toHaveBeenCalledWith(
-      `/api/v1/project/lookup?name=${projectName}&version=${projectVersion}`,
-      expect.objectContaining({
-        method: 'GET',
-        headers: { 'X-API-Key': apiKey }
-      }),
-      expect.any(Function)
-    );
+    expect(mockAxiosInstance.get).toHaveBeenCalledWith(`/api/v1/project/lookup?name=${projectName}&version=${projectVersion}`);
   });
 
   it('should pull processing status successfully', async () => {
     // Arrange
     const isProcessing = true;
     const token = '1b0afc40-a8a1-4ed1-8a23-c464b24f1ddd';
-    request.mockImplementation((url, options, callback) => {
-      callback(null, { statusCode: 200, body: { processing: isProcessing } });
+    mockAxiosInstance.get.mockResolvedValue({
+      status: 200,
+      data: { processing: isProcessing }
     });
 
     // Act
@@ -85,22 +90,16 @@ describe('DTrackClient', () => {
 
     // Assert
     expect(result).toEqual(isProcessing);
-    expect(request).toHaveBeenCalledWith(
-      `/api/v1/event/token/${token}`,
-      expect.objectContaining({
-        method: 'GET',
-        headers: { 'X-API-Key': apiKey }
-      }),
-      expect.any(Function)
-    );
+    expect(mockAxiosInstance.get).toHaveBeenCalledWith(`/api/v1/event/token/${token}`);
   });
 
   it('should get project metrics successfully', async () => {
     // Arrange
     const projectId = '123e4567-e89b-12d3-a456-426614174000';
     const expectedResults = { example: 'data' };
-    request.mockImplementation((url, options, callback) => {
-      callback(null, { statusCode: 200, body: expectedResults });
+    mockAxiosInstance.get.mockResolvedValue({
+      status: 200,
+      data: expectedResults
     });
 
     // Act
@@ -108,14 +107,7 @@ describe('DTrackClient', () => {
 
     // Assert
     expect(result).toEqual(expectedResults);
-    expect(request).toHaveBeenCalledWith(
-      `/api/v1/metrics/project/${projectId}/current`,
-      expect.objectContaining({
-        method: 'GET',
-        headers: { 'X-API-Key': apiKey }
-      }),
-      expect.any(Function)
-    );
+    expect(mockAxiosInstance.get).toHaveBeenCalledWith(`/api/v1/metrics/project/${projectId}/current`);
   });
 
   it('should get last metric calculation date successfully', async () => {
@@ -123,8 +115,9 @@ describe('DTrackClient', () => {
     const projectId = '123e4567-e89b-12d3-a456-426614174000';
     const lastOccurrence = '2023-10-01T00:00:00Z';
     const expectedResults = new Date(lastOccurrence);
-    request.mockImplementation((url, options, callback) => {
-      callback(null, { statusCode: 200, body: { lastOccurrence: lastOccurrence } });
+    mockAxiosInstance.get.mockResolvedValue({
+      status: 200,
+      data: { lastOccurrence: lastOccurrence }
     });
 
     // Act
@@ -132,22 +125,16 @@ describe('DTrackClient', () => {
 
     // Assert
     expect(result).toEqual(expectedResults);
-    expect(request).toHaveBeenCalledWith(
-      `/api/v1/metrics/project/${projectId}/current`,
-      expect.objectContaining({
-        method: 'GET',
-        headers: { 'X-API-Key': apiKey }
-      }),
-      expect.any(Function)
-    );
+    expect(mockAxiosInstance.get).toHaveBeenCalledWith(`/api/v1/metrics/project/${projectId}/current`);
   });
 
   it('should get default date successfully when last Occurrence is not set', async () => {
     // Arrange
     const projectId = '123e4567-e89b-12d3-a456-426614174000';
     const expectedResults = new Date(0);
-    request.mockImplementation((url, options, callback) => {
-      callback(null, { statusCode: 200, body: null });
+    mockAxiosInstance.get.mockResolvedValue({
+      status: 200,
+      data: null
     });
 
     // Act
@@ -155,6 +142,7 @@ describe('DTrackClient', () => {
 
     // Assert
     expect(result).toEqual(expectedResults);
+    expect(mockAxiosInstance.get).toHaveBeenCalledWith(`/api/v1/metrics/project/${projectId}/current`);
   });
 
   it('should update the project successfully', async () => {
@@ -167,8 +155,9 @@ describe('DTrackClient', () => {
     const tags = [{ name: 'tag1' }, { name: 'tag2' }];
 
     const responseBody = { success: true };
-    request.mockImplementation((url, options, callback) => {
-      callback(null, { statusCode: 200, body: responseBody });
+    mockAxiosInstance.patch.mockResolvedValue({
+      status: 200,
+      data: responseBody
     });
 
     // Act
@@ -176,21 +165,13 @@ describe('DTrackClient', () => {
 
     // Assert
     expect(result).toEqual(responseBody);
-    expect(request).toHaveBeenCalledWith(
-      `/api/v1/project/${projId}`,
-      expect.objectContaining({
-        method: 'PATCH',
-        json: {
-          description,
-          classifier,
-          swidTagId,
-          group,
-          tags
-        },
-        headers: { 'X-API-Key': apiKey }
-      }),
-      expect.any(Function)
-    );
+    expect(mockAxiosInstance.patch).toHaveBeenCalledWith(`/api/v1/project/${projId}`, {
+      description,
+      classifier,
+      swidTagId,
+      group,
+      tags
+    });
   });
 
   it('should remove null values from the request body', async () => {
@@ -203,8 +184,9 @@ describe('DTrackClient', () => {
     const tags = null;
 
     const responseBody = { success: true };
-    request.mockImplementation((url, options, callback) => {
-      callback(null, { statusCode: 200, body: responseBody });
+    mockAxiosInstance.patch.mockResolvedValue({
+      status: 200,
+      data: responseBody
     });
 
     // Act
@@ -212,18 +194,10 @@ describe('DTrackClient', () => {
 
     // Assert
     expect(result).toEqual(responseBody);
-    expect(request).toHaveBeenCalledWith(
-      `/api/v1/project/${projId}`,
-      expect.objectContaining({
-        method: 'PATCH',
-        json: {
-          classifier,
-          group
-        },
-        headers: { 'X-API-Key': apiKey }
-      }),
-      expect.any(Function)
-    );
+    expect(mockAxiosInstance.patch).toHaveBeenCalledWith(`/api/v1/project/${projId}`, {
+      classifier,
+      group
+    });
   });
 
   it('should reject with an error if the request fails', async () => {
@@ -236,13 +210,12 @@ describe('DTrackClient', () => {
     const tags = [{ name: 'tag1' }, { name: 'tag2' }];
 
     const error = new Error('Request failed');
-    request.mockImplementation((url, options, callback) => {
-      callback(error, null);
-    });
+    error.response = null;
+    mockAxiosInstance.patch.mockRejectedValue(error);
 
     // Act & Assert
     await expect(client.updateProject(projId, description, classifier, swidTagId, group, tags))
-      .rejects.toEqual({ error, response: null });
+      .rejects.toEqual({ error, response: error.response });
   });
 
   it('should reject with an error if the response status code is not 200', async () => {
@@ -254,13 +227,12 @@ describe('DTrackClient', () => {
     const group = 'example-group';
     const tags = [{ name: 'tag1' }, { name: 'tag2' }];
 
-    const response = { statusCode: 400, body: { error: 'Bad Request' } };
-    request.mockImplementation((url, options, callback) => {
-      callback(null, response);
-    });
+    const error = new Error('Request failed');
+    error.response = { status: 400, data: { error: 'Bad Request' } };
+    mockAxiosInstance.patch.mockRejectedValue(error);
 
     // Act & Assert
     await expect(client.updateProject(projId, description, classifier, swidTagId, group, tags))
-      .rejects.toEqual({ error: null, response });
+      .rejects.toEqual({ error, response: error.response });
   });
 });
