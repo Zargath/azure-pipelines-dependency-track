@@ -1,4 +1,4 @@
-const request = require('request');
+const axios = require('axios');
 
 class DTrackTestFixture {
   constructor(baseUrl, apiKey, caFile = null) {
@@ -6,56 +6,56 @@ class DTrackTestFixture {
     this.apiKey = apiKey;
     this.caFile = caFile;
 
-    this.baseOptions = {
-      baseUrl: this.baseUrl,
-      json: true,
+    // Create axios instance with common configuration
+    this.axiosInstance = axios.create({
+      baseURL: this.baseUrl,
       headers: {
         'X-API-Key': this.apiKey
       },
-      ...(this.caFile ? { ca: this.caFile } : {}),
-    };
+      ...(this.caFile ? { httpsAgent: new (require('https').Agent)({ ca: this.caFile }) } : {}),
+    });
   }
 
-  createProject(name, version) {
-    return new Promise((resolve, reject) => {
+  async createProject(name, version) {
+    try {
       const projectData = {
         name,
         version
       };
 
-      request('/api/v1/project', {
-        ...this.baseOptions,
-        method: 'PUT',
-        json: projectData
-      }, (error, response) => {
-        if (!error && (response.statusCode === 201 || response.statusCode === 200)) {
-          resolve(response.body.uuid);
-        } else {
-          reject({
-            error,
-            status: response?.statusCode,
-            body: response?.body,
-            message: 'Failed to create parent project'
-          });
-        }
-      });
-    });
+      const response = await this.axiosInstance.put('/api/v1/project', projectData);
+      
+      if (response.status === 201 || response.status === 200) {
+        return response.data.uuid;
+      } else {
+        throw {
+          error: new Error(`Unexpected status code: ${response.status}`),
+          status: response.status,
+          body: response.data,
+          message: 'Failed to create parent project'
+        };
+      }
+    } catch (error) {
+      throw {
+        error: error.response ? error : error.error,
+        status: error.response?.status,
+        body: error.response?.data,
+        message: error.message || 'Failed to create parent project'
+      };
+    }
   }
 
-  getProjectChildren(projId) {
-    return new Promise((resolve, reject) => {
-      request(`/api/v1/project/${projId}/children`, {
-        ...this.baseOptions,
-        method: 'GET',
-      },
-        (error, response) => {
-          if (!error && response.statusCode == 200) {
-            resolve(response.body);
-          }
-
-          reject({ error, response });
-        });
-    });
+  async getProjectChildren(projId) {
+    try {
+      const response = await this.axiosInstance.get(`/api/v1/project/${projId}/children`);
+      
+      if (response.status === 200) {
+        return response.data;
+      }
+      throw new Error(`Unexpected status code: ${response.status}`);
+    } catch (error) {
+      throw { error, response: error.response };
+    }
   }
 }
 

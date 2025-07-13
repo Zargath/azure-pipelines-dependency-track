@@ -17,14 +17,14 @@
     "@babel/plugin-transform-runtime": "^7.28.0",
     "@babel/runtime": "^7.27.6",
     "azure-pipelines-task-lib": "^5.2.1",
-    "request": "^2.88.2"
+    "axios": "^1.10.0",
+    "form-data": "^4.0.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.28.0",
     "@babel/preset-env": "^7.26.9",
     "@types/node": "^24.0.10",
     "@types/q": "^1.5.5",
-    "axios": "^1.10.0",
     "babel-jest": "^30.0.2",
     "jest": "^30.0.4"
   }
