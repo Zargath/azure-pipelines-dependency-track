@@ -2,11 +2,12 @@
 set -euo pipefail
 
 # Configuration
-BASE_URL="http://localhost:8080"
+BASE_URL="https://localhost:8080"
 INITIAL_PASSWORD="admin"
 NEW_PASSWORD="NewSecurePassword123!"
 MAX_HEALTH_CHECK_RETRIES=30
 HEALTH_CHECK_INTERVAL=2 # seconds
+CURL_OPTS="-k" # Skip SSL verification for self-signed certificates
 
 # Define script directory and data storage location
 SETUP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
@@ -63,7 +64,7 @@ wait_for_api_server() {
     set +e
     local temp_headers=$(mktemp)
     local temp_body=$(mktemp)
-    local http_code=$(curl -s -w "%{http_code}" -D "$temp_headers" -o "$temp_body" "${BASE_URL}/api/version" 2>&1)
+    local http_code=$(curl -s -k -w "%{http_code}" -D "$temp_headers" -o "$temp_body" "${BASE_URL}/api/version" 2>&1)
     local curl_exit_code=$?
     set -e
     
@@ -110,14 +111,14 @@ setup_auth_and_api_key() {
 
   # Force password change
   local password_change_response
-  password_change_response=$(curl -s -X POST \
+  password_change_response=$(curl -s -k -X POST \
     "${BASE_URL}/api/v1/user/forceChangePassword" \
     -H "Content-Type: application/x-www-form-urlencoded" \
     -d "username=admin&password=${INITIAL_PASSWORD}&newPassword=${NEW_PASSWORD}&confirmPassword=${NEW_PASSWORD}")
 
   # Login with new password
   local jwt_token
-  jwt_token=$(curl -s -X POST \
+  jwt_token=$(curl -s -k -X POST \
     "${BASE_URL}/api/v1/user/login" \
     -H "Content-Type: application/x-www-form-urlencoded" \
     -d "username=admin&password=${NEW_PASSWORD}" | tr -d '"')
@@ -129,7 +130,7 @@ setup_auth_and_api_key() {
 
   # Get Administrator team UUID
   local admin_team_uuid
-  admin_team_uuid=$(curl -s -X GET "${BASE_URL}/api/v1/team" \
+  admin_team_uuid=$(curl -s -k -X GET "${BASE_URL}/api/v1/team" \
     -H "Authorization: Bearer ${jwt_token}" \
     -H "Content-Type: application/json" | 
     jq -r '.[] | select(.name=="Administrators") | .uuid')
@@ -141,7 +142,7 @@ setup_auth_and_api_key() {
 
   # Generate team API key
   local api_key
-  api_key=$(curl -s -X PUT "${BASE_URL}/api/v1/team/${admin_team_uuid}/key" \
+  api_key=$(curl -s -k -X PUT "${BASE_URL}/api/v1/team/${admin_team_uuid}/key" \
     -H "Authorization: Bearer ${jwt_token}" \
     -H "Content-Type: application/json" |
     jq -r '.key')

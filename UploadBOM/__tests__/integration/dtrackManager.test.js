@@ -6,7 +6,7 @@ const DTrackTestFixture = require('./setup/DTrackTestFixture');
 const { getTestApiKey, generateUniqueName } = require('./test-utils');
 
 describe('DTrackManager Integration Tests - Parent and Child Projects', () => {
-    const BASE_URL = 'http://localhost:8080';
+    const BASE_URL = 'https://localhost:8080';
     let client;
     let dtrackManager;
     let apiKey;
@@ -17,9 +17,11 @@ describe('DTrackManager Integration Tests - Parent and Child Projects', () => {
         try {
             // Get API key and initialize client and manager
             apiKey = getTestApiKey();
-            client = new DTrackClient(BASE_URL, apiKey);
+            const caFilePath = path.join(__dirname, 'setup/certs', 'apiserver.crt');
+            const caFile = fs.existsSync(caFilePath) ? fs.readFileSync(caFilePath) : undefined;
+            client = new DTrackClient(BASE_URL, apiKey, caFile);
             dtrackManager = new DTrackManager(client);
-            dTrackTestFixture = new DTrackTestFixture(BASE_URL, apiKey);
+            dTrackTestFixture = new DTrackTestFixture(BASE_URL, apiKey, caFile);
 
             // Load test BOM file
             const bomPath = path.join(__dirname, 'setup/test-bom.json');
