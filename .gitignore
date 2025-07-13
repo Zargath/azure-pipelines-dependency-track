@@ -8,5 +8,6 @@ bom.xml
 run.cmd
 .vscode
 
+certs
 dtrack-data
 .test-api-key
