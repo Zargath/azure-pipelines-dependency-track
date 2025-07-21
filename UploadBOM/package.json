@@ -23,7 +23,7 @@
   "devDependencies": {
     "@babel/cli": "^7.28.0",
     "@babel/preset-env": "^7.28.0",
-    "@types/node": "^24.0.13",
+    "@types/node": "^24.0.15",
     "@types/q": "^1.5.5",
     "babel-jest": "^30.0.2",
     "jest": "^30.0.4"
