@@ -35,11 +35,13 @@ describe('DTrackManager Integration Tests - Parent and Child Projects', () => {
     it('should create a project upon BOM upload', async () => {
         const projectName = generateUniqueName('test-project');
         const projectVersion = '1.0.0';
+        const projectIsLatest = false;
 
         // Upload BOM and create project
         const token = await dtrackManager.uploadBomAndCreateProjectAsync(
             projectName,
             projectVersion,
+            projectIsLatest,
             testBom
         );
 

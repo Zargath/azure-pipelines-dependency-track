@@ -89,9 +89,9 @@ class DtrackManager {
     }
   }
 
-  async uploadBomAndCreateProjectAsync(name, version, bom) {
+  async uploadBomAndCreateProjectAsync(name, version, isLatest, bom) {
     try {
-      const token = await this.dtrackClient.uploadBomAndCreateProjectAsync(name, version, bom);
+      const token = await this.dtrackClient.uploadBomAndCreateProjectAsync(name, version, isLatest, bom);
       return token;
     }
     catch (err) {

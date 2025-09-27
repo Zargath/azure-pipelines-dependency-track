@@ -57,7 +57,7 @@ const run = async () => {
     } 
     else {
       console.log(localize('BOMUploadAndCreateStarting', params.dtrackURI, params.projectName, params.projectVersion));
-      token = await dtrackManager.uploadBomAndCreateProjectAsync(params.projectName, params.projectVersion, bom);
+      token = await dtrackManager.uploadBomAndCreateProjectAsync(params.projectName, params.projectVersion, params.isLatest, bom);
     }
 
     console.log(localize('GetProjectUuidStarting', params.projectName, params.projectVersion));

@@ -24,12 +24,13 @@ class DTrackClient {
     return this.#postBomAsync(data);
   }
   
-  uploadBomAndCreateProjectAsync(name, version, bom) {
+  uploadBomAndCreateProjectAsync(name, version, isLatest, bom) {
     const data = {
       "autoCreate": 'true',
       "projectName": name,
       "projectVersion": version,
-      "bom": bom.toString()
+      "isLatest": String(isLatest),
+      "bom": bom.toString(),
     };
     return this.#postBomAsync(data);
   }
