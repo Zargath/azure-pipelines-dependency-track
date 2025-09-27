@@ -159,6 +159,59 @@ describe('Task Integration Tests', () => {
         const childrenIds = childrenResponse.map(project => project.uuid);
         expect(childrenIds).toContain(childProjectId);
     });
+    
+    // Test for GitHub issue #78: dtrackIsLatest not being set correctly
+    it('should correctly set isLatest flag when uploading BOM with dtrackIsLatest=true', async () => {
+        // Arrange
+        const parentProjectName = generateUniqueName('parent-project-issue-78');
+        const parentProjectVersion = '1.0.0';
+        const childProjectName = generateUniqueName('child-project-issue-78');
+        const childProjectVersion = '1.0.1';
+        
+        // First create the parent project
+        const parentProjectId = await dTrackTestFixture.createProject(parentProjectName, parentProjectVersion);
+        expect(parentProjectId).toBeTruthy();
+        
+        // Setup the task input parameters with dtrackIsLatest=true
+        mockTaskLib.setInput('dtrackURI', BASE_URL);
+        mockTaskLib.setInput('dtrackAPIKey', apiKey);
+        mockTaskLib.setInput('dtrackProjName', childProjectName);
+        mockTaskLib.setInput('dtrackProjVersion', childProjectVersion);
+        mockTaskLib.setInput('dtrackProjAutoCreate', 'true');
+        mockTaskLib.setInput('dtrackParentProjName', parentProjectName);
+        mockTaskLib.setInput('dtrackParentProjVersion', parentProjectVersion);
+        mockTaskLib.setInput('dtrackProjClassifier', 'APPLICATION');
+        mockTaskLib.setInput('dtrackIsLatest', 'true');
+        mockTaskLib.setPathInput('bomFilePath', testBomFilePath, true, true);
+        mockTaskLib.setBoolInput('dtrackProjAutoCreate', true);
+        mockTaskLib.setBoolInput('dtrackIsLatest', true);
+        mockTaskLib.setStats(testBomFilePath, { isFile: () => true });
+        mockTaskLib.setPathInput('caFilePath', caFilePath, true, true);
+        mockTaskLib.setStats(caFilePath, { isFile: () => true });
+        
+        // Run the task module
+        await run();
+        
+        // Verify the child project was created
+        const client = new DTrackClient(BASE_URL, apiKey, caFile);
+        
+        // Check that child project exists
+        const childProjectId = await client.getProjectUUID(childProjectName, childProjectVersion);
+        expect(childProjectId).toBeTruthy();
+        
+        // Check child project info
+        const childProjectInfo = await client.getProjectInfo(childProjectId);
+        expect(childProjectInfo.name).toBe(childProjectName);
+        expect(childProjectInfo.version).toBe(childProjectVersion);
+        
+        // Specifically verify that isLatest is set to true
+        expect(childProjectInfo.isLatest).toBe(true);
+        
+        // Verify child-parent relationship
+        const childrenResponse = await dTrackTestFixture.getProjectChildren(parentProjectId);
+        const childrenIds = childrenResponse.map(project => project.uuid);
+        expect(childrenIds).toContain(childProjectId);
+    });
 
     it('should upload BOM and create a child project when parent project version is undefined', async () => {
         // Arrange
