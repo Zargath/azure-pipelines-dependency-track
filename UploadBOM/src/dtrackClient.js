@@ -166,13 +166,14 @@ class DTrackClient {
     }
   }
 
-  async updateProject(projId, description, classifier, swidTagId, group, tags) {
+  async updateProject(projId, description, classifier, swidTagId, group, tags, isLatest) {
     const data = {
       "description": description,
       "classifier": classifier,
       "swidTagId": swidTagId,
       "group": group,
       "tags": tags,
+      "isLatest": isLatest
     }
 
     // Remove properties with null values

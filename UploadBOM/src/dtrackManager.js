@@ -68,7 +68,7 @@ class DtrackManager {
       }
 
       console.log(localize('UpdatingProject'));
-      const newSettings = await this.dtrackClient.updateProject(projectId, updatedInfo.description, updatedInfo.classifier, updatedInfo.swidTagId, updatedInfo.group, updatedInfo.tags);
+      const newSettings = await this.dtrackClient.updateProject(projectId, updatedInfo.description, updatedInfo.classifier, updatedInfo.swidTagId, updatedInfo.group, updatedInfo.tags, projectInfo.isLatest);
 
       console.log(localize('NewProjectSettings'));
       console.log(localize('projectSettings', projectId, newSettings.name, newSettings.version, newSettings.description, newSettings.classifier, newSettings.swidTagId, newSettings.group, newSettings.tags.map(tag => tag.name).join(', '), newSettings.isLatest));
