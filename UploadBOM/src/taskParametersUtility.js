@@ -31,6 +31,7 @@ class TaskParametersUtility {
             parentProjectName: tl.getInput('dtrackParentProjName', false),
             parentProjectVersion: tl.getInput('dtrackParentProjVersion', false),
             isLatest: tl.getBoolInput('dtrackIsLatest', false),
+            isActive: tl.getBoolInput('dtrackIsActive', false) || true,
             bomFilePath: tl.getPathInput('bomFilePath', true, true),
             dtrackAPIKey: dtrackAPIKey,
             dtrackURI: dtrackURI,

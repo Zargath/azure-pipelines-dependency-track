@@ -94,7 +94,8 @@ Provide **one** of the following:
 | `dtrackProjClassifier` | Classifier (e.g., `APPLICATION`, `FRAMEWORK`, etc.) |
 | `dtrackParentProjName` | Parent project name (with optional auto-create) |
 | `dtrackParentProjVersion` | Parent project version (with optional auto-create) |
-| `dtrackIsLatest` | Sets the new child project as the latest version. Requires parent project name and version to be specified. Only works if Auto Create Project is set to TRUE. Defaults to false. |
+| `dtrackIsLatest` | Sets the project as the latest version. Defaults to false. |
+| `dtrackIsActive` | Sets the project as active. Defaults to true. |
 
 ---
 

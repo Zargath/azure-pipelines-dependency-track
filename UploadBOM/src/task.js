@@ -21,14 +21,6 @@ function loadFile(path, errorKey) {
   }
 }
 
-function shouldUpdateProject(params) {
-  return params.projectDescription || 
-         params.projectClassifier || 
-         params.projectSwidTagId || 
-         params.projectGroup || 
-         params.projectTags;
-}
-
 const run = async () => {
   tl.setResourcePath(path.join(__dirname, 'task.json'));
 
@@ -75,9 +67,7 @@ const run = async () => {
 
   console.log(localize('BOMUploadSucceed', token));
 
-  if (shouldUpdateProject(params)) {
-    await dtrackManager.updateProject(projectId, params.projectDescription, params.projectClassifier, params.projectSwidTagId, params.projectGroup, params.projectTags);
-  }
+  await dtrackManager.updateProject(projectId, params.projectDescription, params.projectClassifier, params.projectSwidTagId, params.projectGroup, params.projectTags, params.isLatest, params.isActive);
 
   const thresholdExpert = new ThresholdExpert(
     Number.parseInt(params.thresholdCritical),
