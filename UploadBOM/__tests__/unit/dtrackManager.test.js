@@ -77,6 +77,8 @@ describe('DtrackManager', () => {
       const swidTagId = 'swid:example.com:product:1.0.0';
       const group = 'com.example';
       const tags = ['tag1', 'tag2'];
+      const isLatest = true;
+      const isActive = false;
 
       const existingProject = {
         name: 'test-project',
@@ -86,7 +88,8 @@ describe('DtrackManager', () => {
         swidTagId: '',
         group: '',
         tags: [],
-        isLatest: false
+        isLatest: false,
+        active: true
       };
 
       const updatedProject = {
@@ -95,7 +98,9 @@ describe('DtrackManager', () => {
         classifier,
         swidTagId,
         group,
-        tags: tags.map(tag => ({ name: tag }))
+        tags: tags.map(tag => ({ name: tag })),
+        isLatest,
+        active: isActive
       };
 
       mockDtrackClient.getProjectInfo.mockResolvedValue(existingProject);
@@ -112,7 +117,9 @@ describe('DtrackManager', () => {
         classifier,
         swidTagId,
         group,
-        tags.map(tag => ({ name: tag }))
+        tags.map(tag => ({ name: tag })),
+        isLatest,
+        isActive
       );
     });
 
