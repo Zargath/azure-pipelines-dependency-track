@@ -24,12 +24,13 @@ class DTrackClient {
     return this.#postBomAsync(data);
   }
   
-  uploadBomAndCreateProjectAsync(name, version, bom) {
+  uploadBomAndCreateProjectAsync(name, version, isLatest, bom) {
     const data = {
       "autoCreate": 'true',
       "projectName": name,
       "projectVersion": version,
-      "bom": bom.toString()
+      "isLatest": String(isLatest),
+      "bom": bom.toString(),
     };
     return this.#postBomAsync(data);
   }
@@ -165,13 +166,14 @@ class DTrackClient {
     }
   }
 
-  async updateProject(projId, description, classifier, swidTagId, group, tags) {
+  async updateProject(projId, description, classifier, swidTagId, group, tags, isLatest) {
     const data = {
       "description": description,
       "classifier": classifier,
       "swidTagId": swidTagId,
       "group": group,
       "tags": tags,
+      "isLatest": isLatest
     }
 
     // Remove properties with null values

@@ -77,6 +77,7 @@ describe('DtrackManager', () => {
       const swidTagId = 'swid:example.com:product:1.0.0';
       const group = 'com.example';
       const tags = ['tag1', 'tag2'];
+      const isLatest = true;
 
       const existingProject = {
         name: 'test-project',
@@ -86,7 +87,8 @@ describe('DtrackManager', () => {
         swidTagId: '',
         group: '',
         tags: [],
-        isLatest: false
+        isLatest: false,
+        active: true
       };
 
       const updatedProject = {
@@ -95,14 +97,15 @@ describe('DtrackManager', () => {
         classifier,
         swidTagId,
         group,
-        tags: tags.map(tag => ({ name: tag }))
+        tags: tags.map(tag => ({ name: tag })),
+        isLatest
       };
 
       mockDtrackClient.getProjectInfo.mockResolvedValue(existingProject);
       mockDtrackClient.updateProject.mockResolvedValue(updatedProject);
 
       // Act
-      await dtrackManager.updateProject(projectId, description, classifier, swidTagId, group, tags);
+      await dtrackManager.updateProject(projectId, description, classifier, swidTagId, group, tags, isLatest);
 
       // Assert
       expect(mockDtrackClient.getProjectInfo).toHaveBeenCalledWith(projectId);
@@ -112,7 +115,8 @@ describe('DtrackManager', () => {
         classifier,
         swidTagId,
         group,
-        tags.map(tag => ({ name: tag }))
+        tags.map(tag => ({ name: tag })),
+        isLatest
       );
     });
 
@@ -139,7 +143,7 @@ describe('DtrackManager', () => {
       mockDtrackClient.getProjectInfo.mockResolvedValue(existingProject);
 
       // Act
-      await dtrackManager.updateProject(projectId, description, classifier, swidTagId, group, tags);
+      await dtrackManager.updateProject(projectId, description, classifier, swidTagId, group, tags, false);
 
       // Assert
       expect(mockDtrackClient.getProjectInfo).toHaveBeenCalledWith(projectId);
