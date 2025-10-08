@@ -105,7 +105,7 @@ describe('DtrackManager', () => {
       mockDtrackClient.updateProject.mockResolvedValue(updatedProject);
 
       // Act
-      await dtrackManager.updateProject(projectId, description, classifier, swidTagId, group, tags);
+      await dtrackManager.updateProject(projectId, description, classifier, swidTagId, group, tags, isLatest);
 
       // Assert
       expect(mockDtrackClient.getProjectInfo).toHaveBeenCalledWith(projectId);
@@ -143,7 +143,7 @@ describe('DtrackManager', () => {
       mockDtrackClient.getProjectInfo.mockResolvedValue(existingProject);
 
       // Act
-      await dtrackManager.updateProject(projectId, description, classifier, swidTagId, group, tags);
+      await dtrackManager.updateProject(projectId, description, classifier, swidTagId, group, tags, false);
 
       // Assert
       expect(mockDtrackClient.getProjectInfo).toHaveBeenCalledWith(projectId);
