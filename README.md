@@ -95,7 +95,6 @@ Provide **one** of the following:
 | `dtrackParentProjName` | Parent project name (with optional auto-create) |
 | `dtrackParentProjVersion` | Parent project version (with optional auto-create) |
 | `dtrackIsLatest` | Sets the project as the latest version. Defaults to false. |
-| `dtrackIsActive` | Sets the project as active. Defaults to true. |
 
 ---
 

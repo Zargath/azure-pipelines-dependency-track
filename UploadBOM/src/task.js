@@ -67,7 +67,7 @@ const run = async () => {
 
   console.log(localize('BOMUploadSucceed', token));
 
-  await dtrackManager.updateProject(projectId, params.projectDescription, params.projectClassifier, params.projectSwidTagId, params.projectGroup, params.projectTags, params.isLatest, params.isActive);
+  await dtrackManager.updateProject(projectId, params.projectDescription, params.projectClassifier, params.projectSwidTagId, params.projectGroup, params.projectTags, params.isLatest);
 
   const thresholdExpert = new ThresholdExpert(
     Number.parseInt(params.thresholdCritical),

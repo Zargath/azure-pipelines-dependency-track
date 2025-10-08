@@ -22,7 +22,7 @@ class DtrackManager {
     return info;
   }
 
-  async updateProject(projectId, description, classifier, swidTagId, group, tags, isLatest, isActive) {
+  async updateProject(projectId, description, classifier, swidTagId, group, tags, isLatest) {
     try {
       let updatedInfo = {};
 
@@ -61,10 +61,6 @@ class DtrackManager {
         if (typeof isLatest === 'boolean' && projectInfo.isLatest !== isLatest) {
           updatedInfo.isLatest = isLatest;
         }
-
-        if (typeof isActive === 'boolean' && projectInfo.active !== isActive) {
-          updatedInfo.active = isActive;
-        }
       }
 
       console.log(localize('CurrentProjectSettings'));
@@ -74,14 +70,13 @@ class DtrackManager {
         console.log(localize('NoProjectChanges'));
         return;
       } else {
-        // Force update of isLatest and active flags
+        // Force update of isLatest flag
         // See issue: https://github.com/DependencyTrack/dependency-track/issues/5279
         updatedInfo.isLatest = isLatest;
-        updatedInfo.active = isActive;
       }
 
       console.log(localize('UpdatingProject'));
-      const newSettings = await this.dtrackClient.updateProject(projectId, updatedInfo.description, updatedInfo.classifier, updatedInfo.swidTagId, updatedInfo.group, updatedInfo.tags, updatedInfo.isLatest, updatedInfo.active);
+      const newSettings = await this.dtrackClient.updateProject(projectId, updatedInfo.description, updatedInfo.classifier, updatedInfo.swidTagId, updatedInfo.group, updatedInfo.tags, updatedInfo.isLatest);
 
       console.log(localize('NewProjectSettings'));
       console.log(localize('projectSettings', projectId, newSettings.name, newSettings.version, newSettings.description, newSettings.classifier, newSettings.swidTagId, newSettings.group, newSettings.tags.map(tag => tag.name).join(', '), newSettings.isLatest, newSettings.active));

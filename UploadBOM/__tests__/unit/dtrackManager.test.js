@@ -78,7 +78,6 @@ describe('DtrackManager', () => {
       const group = 'com.example';
       const tags = ['tag1', 'tag2'];
       const isLatest = true;
-      const isActive = false;
 
       const existingProject = {
         name: 'test-project',
@@ -99,8 +98,7 @@ describe('DtrackManager', () => {
         swidTagId,
         group,
         tags: tags.map(tag => ({ name: tag })),
-        isLatest,
-        active: isActive
+        isLatest
       };
 
       mockDtrackClient.getProjectInfo.mockResolvedValue(existingProject);
@@ -118,8 +116,7 @@ describe('DtrackManager', () => {
         swidTagId,
         group,
         tags.map(tag => ({ name: tag })),
-        isLatest,
-        isActive
+        isLatest
       );
     });
 

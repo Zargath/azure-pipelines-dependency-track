@@ -400,12 +400,11 @@ describe('Task Integration Tests', () => {
         
         // Set up the update parameters
         const description = 'Updated test project description';
-        const classifier = 'APPLICATION';
+        const classifier = 'FRAMEWORK'; // Use a different classifier than the default 'APPLICATION'
         const swidTagId = 'swidTag123';
         const group = 'test-group';
         const tags = ['test-tag1', 'test-tag2'];
         const isLatest = true;
-        const isActive = true;
         
         // Setup the task input parameters for updating the project
         mockTaskLib.setInput('dtrackURI', BASE_URL);
@@ -417,7 +416,6 @@ describe('Task Integration Tests', () => {
         mockTaskLib.setInput('dtrackProjGroup', group);
         mockTaskLib.setInput('dtrackProjTags', tags.join('\n'));
         mockTaskLib.setBoolInput('dtrackIsLatest', isLatest);
-        mockTaskLib.setBoolInput('dtrackIsActive', isActive);
         mockTaskLib.setPathInput('bomFilePath', testBomFilePath, true, true);
         mockTaskLib.setStats(testBomFilePath, { isFile: () => true });
         mockTaskLib.setPathInput('caFilePath', caFilePath, true, true);
@@ -442,9 +440,19 @@ describe('Task Integration Tests', () => {
             expect(updatedTags).toContain(tag);
         });
         
+        // Verify the values have actually changed from the initial state
+        expect(updatedProjectInfo.description).not.toBe(initialProjectInfo.description);
+        expect(updatedProjectInfo.classifier).not.toBe(initialProjectInfo.classifier);
+        expect(updatedProjectInfo.swidTagId).not.toBe(initialProjectInfo.swidTagId || '');
+        expect(updatedProjectInfo.group).not.toBe(initialProjectInfo.group || '');
+        
+        // Verify initial tags were different
+        const initialTags = initialProjectInfo.tags ? initialProjectInfo.tags.map(tag => tag.name) : [];
+        expect(updatedTags.sort().join(',')).not.toBe(initialTags.sort().join(','));
+        
         // Check boolean flags
         expect(updatedProjectInfo.isLatest).toBe(isLatest);
-        expect(updatedProjectInfo.active).toBe(isActive);
+        expect(updatedProjectInfo.isLatest).not.toBe(initialProjectInfo.isLatest);
         
         // Ensure name and version haven't changed
         expect(updatedProjectInfo.name).toBe(projectName);
