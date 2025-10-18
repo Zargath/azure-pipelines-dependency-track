@@ -13,7 +13,8 @@ CURL_OPTS="-k" # Skip SSL verification for self-signed certificates
 SETUP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 DATA_DIR="${SETUP_DIR}/dtrack-data"
 DOCKER_COMPOSE_PATH="${SETUP_DIR}/docker-compose.test.yml"
-API_KEY_FILE="${SETUP_DIR}/.test-api-key"
+API_KEYS_DIR="${SETUP_DIR}/api-keys"
+ADMIN_API_KEY_FILE="${API_KEYS_DIR}/admin.key"
 
 # Check if jq is installed
 if ! command -v jq &> /dev/null; then
@@ -106,8 +107,8 @@ wait_for_api_server() {
 }
 
 # Setup authentication and get API key
-setup_auth_and_api_key() {
-  echo "Setting up authentication and generating API key..."
+setup_auth_and_admin_api_key() {
+  echo "Setting up authentication and generating Admin API key..."
 
   # Force password change
   local password_change_response
@@ -153,8 +154,98 @@ setup_auth_and_api_key() {
   fi
 
   # Save API key to file for tests to use
-  echo "$api_key" > "$API_KEY_FILE"
-  echo "✓ API key saved to ${API_KEY_FILE}"
+  echo "$api_key" > "$ADMIN_API_KEY_FILE"
+  echo "✓ API key saved to ${ADMIN_API_KEY_FILE}"
+}
+
+setup_least_privilege_api_keys() {
+  echo "Setting up least privilege API keys..."
+  local admin_api_key
+  admin_api_key=$(cat "$ADMIN_API_KEY_FILE")
+  
+  # Define team configurations (team_name:permission1,permission2,...)
+  local team_configs=(
+    "BOM-Upload-Only:BOM_UPLOAD"
+    "BOM-Upload-Viewer:BOM_UPLOAD,VIEW_PORTFOLIO"
+    "Project-Creator:BOM_UPLOAD,VIEW_PORTFOLIO,PROJECT_CREATION_UPLOAD"
+    "Portfolio-Manager:BOM_UPLOAD,VIEW_PORTFOLIO,PROJECT_CREATION_UPLOAD,PORTFOLIO_MANAGEMENT"
+  )
+  
+  for team_config in "${team_configs[@]}"; do
+    local team_name="${team_config%%:*}"
+    local permissions="${team_config#*:}"
+    
+    echo "Creating team: $team_name with permissions: $permissions"
+    
+    # Create team using PUT method as per OpenAPI spec
+    local create_response
+    create_response=$(curl -s -k -w "HTTP_CODE:%{http_code}" -X PUT "${BASE_URL}/api/v1/team" \
+      -H "X-API-Key: ${admin_api_key}" \
+      -H "Content-Type: application/json" \
+      -d "{\"name\":\"${team_name}\"}")
+    
+    local http_code="${create_response##*HTTP_CODE:}"
+    local response_body="${create_response%HTTP_CODE:*}"
+    
+    local team_uuid
+    if [[ "$http_code" == "201" || "$http_code" == "200" ]]; then
+      team_uuid=$(echo "$response_body" | jq -r '.uuid' 2>/dev/null)
+      if [[ -n "$team_uuid" && "$team_uuid" != "null" ]]; then
+        echo "  ✓ Team created with UUID: $team_uuid"
+      else
+        echo "  ERROR: Could not extract UUID from response: $response_body"
+        continue
+      fi
+    else
+      echo "  ERROR: Failed to create team $team_name. HTTP: $http_code, Response: $response_body"
+      continue
+    fi
+    
+    # Add permissions to team
+    IFS=',' read -ra permission_array <<< "$permissions"
+    for permission in "${permission_array[@]}"; do
+      echo "  Adding permission: $permission"
+      local perm_response
+      perm_response=$(curl -s -k -w "HTTP_CODE:%{http_code}" -X POST "${BASE_URL}/api/v1/permission/${permission}/team/${team_uuid}" \
+        -H "X-API-Key: ${admin_api_key}" \
+        -H "Content-Type: application/json")
+      
+      local perm_http_code="${perm_response##*HTTP_CODE:}"
+      if [[ "$perm_http_code" != "200" && "$perm_http_code" != "201" ]]; then
+        local perm_response_body="${perm_response%HTTP_CODE:*}"
+        echo "    ERROR: Failed to add permission $permission. HTTP: $perm_http_code, Response: $perm_response_body"
+      fi
+    done
+    
+    # Generate API key for team
+    echo "  Generating API key..."
+    local key_response
+    key_response=$(curl -s -k -w "HTTP_CODE:%{http_code}" -X PUT "${BASE_URL}/api/v1/team/${team_uuid}/key" \
+      -H "X-API-Key: ${admin_api_key}" \
+      -H "Content-Type: application/json")
+    
+    local key_http_code="${key_response##*HTTP_CODE:}"
+    local key_response_body="${key_response%HTTP_CODE:*}"
+    
+    local team_api_key
+    if [[ "$key_http_code" == "201" || "$key_http_code" == "200" ]]; then
+      team_api_key=$(echo "$key_response_body" | jq -r '.key' 2>/dev/null)
+      
+      if [[ -n "$team_api_key" && "$team_api_key" != "null" ]]; then
+        # Save API key to file
+        echo "$team_api_key" > "${API_KEYS_DIR}/${team_name}.key"
+        echo "  ✓ API key saved for $team_name"
+      else
+        echo "  ERROR: Could not extract API key from response: $key_response_body"
+      fi
+    else
+      echo "  ERROR: Failed to generate API key for $team_name. HTTP: $key_http_code, Response: $key_response_body"
+    fi
+    
+    echo ""
+  done
+  
+  echo "✓ Least privilege API keys setup completed"
 }
 
 # Start Dependency Track environment
@@ -174,8 +265,12 @@ start_dependency_track() {
   # Wait for the API server to be ready
   wait_for_api_server
 
-  # Setup authentication and API key
-  setup_auth_and_api_key
+  # Create API keys directory
+  mkdir -p "$API_KEYS_DIR"
+
+  # Setup authentication and API keys
+  setup_auth_and_admin_api_key
+  setup_least_privilege_api_keys
 
   echo "✓ Dependency Track test environment started successfully!"
 }
@@ -187,10 +282,11 @@ stop_dependency_track() {
   # Stop containers
   docker-compose -f "$DOCKER_COMPOSE_PATH" down -v
   
-  # Remove the API key file
-  if [[ -f "$API_KEY_FILE" ]]; then
-    rm -f "$API_KEY_FILE"
-    echo "✓ API key file cleaned up."
+  # Remove the API keys directory
+  local API_KEYS_DIR="${SETUP_DIR}/api-keys"
+  if [[ -d "$API_KEYS_DIR" ]]; then
+    rm -rf "$API_KEYS_DIR"
+    echo "✓ API keys directory cleaned up."
   fi
   
   # Delete the contents of the dtrack-data directory

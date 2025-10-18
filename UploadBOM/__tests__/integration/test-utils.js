@@ -1,16 +1,17 @@
 const fs = require('fs');
 const path = require('path');
 
-const API_KEY_FILE = path.join(__dirname, 'setup/.test-api-key');
+const API_KEY_FOLDER = path.join(__dirname, 'setup/api-keys');
 const TEST_BOM_FILE = path.join(__dirname, 'setup/test-bom.json');
 
-function getTestApiKey() {
+function getTestApiKey(keyName = 'admin') {
+  const apiKeyFile = path.join(API_KEY_FOLDER, `${keyName}.key`);
   try {
-    if (!fs.existsSync(API_KEY_FILE)) {
-      throw new Error('API key file not found at ' + API_KEY_FILE);
+    if (!fs.existsSync(apiKeyFile)) {
+      throw new Error('API key file not found at ' + apiKeyFile);
     }
     
-    const apiKey = fs.readFileSync(API_KEY_FILE, 'utf8').trim();
+    const apiKey = fs.readFileSync(apiKeyFile, 'utf8').trim();
     
     if (!apiKey) {
       throw new Error('API key is empty.');

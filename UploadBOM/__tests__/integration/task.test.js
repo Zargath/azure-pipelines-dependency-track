@@ -56,7 +56,7 @@ describe('Task Integration Tests', () => {
         
         // Setup the task input parameters
         mockTaskLib.setInput('dtrackURI', BASE_URL);
-        mockTaskLib.setInput('dtrackAPIKey', apiKey);
+        mockTaskLib.setInput('dtrackAPIKey', getTestApiKey('Project-Creator'));
         mockTaskLib.setInput('dtrackProjName', projectName);
         mockTaskLib.setInput('dtrackProjVersion', projectVersion);
         mockTaskLib.setPathInput('bomFilePath', testBomFilePath, true, true);
@@ -96,7 +96,7 @@ describe('Task Integration Tests', () => {
         
         // Setup the task input parameters to upload to existing project
         mockTaskLib.setInput('dtrackURI', BASE_URL);
-        mockTaskLib.setInput('dtrackAPIKey', apiKey);
+        mockTaskLib.setInput('dtrackAPIKey', getTestApiKey('BOM-Upload-Viewer'));
         mockTaskLib.setInput('dtrackProjId', projectId);
         mockTaskLib.setPathInput('bomFilePath', testBomFilePath, true, true);
         mockTaskLib.setStats(testBomFilePath, { isFile: () => true });
@@ -127,7 +127,7 @@ describe('Task Integration Tests', () => {
         
         // Setup the task input parameters to create child project
         mockTaskLib.setInput('dtrackURI', BASE_URL);
-        mockTaskLib.setInput('dtrackAPIKey', apiKey);
+        mockTaskLib.setInput('dtrackAPIKey', getTestApiKey('Project-Creator'));
         mockTaskLib.setInput('dtrackProjName', childProjectName);
         mockTaskLib.setInput('dtrackProjVersion', childProjectVersion);
         mockTaskLib.setInput('dtrackParentProjName', parentProjectName);
@@ -175,7 +175,7 @@ describe('Task Integration Tests', () => {
         
         // Setup the task input parameters with dtrackIsLatest=true
         mockTaskLib.setInput('dtrackURI', BASE_URL);
-        mockTaskLib.setInput('dtrackAPIKey', apiKey);
+        mockTaskLib.setInput('dtrackAPIKey', getTestApiKey('Project-Creator'));
         mockTaskLib.setInput('dtrackProjName', childProjectName);
         mockTaskLib.setInput('dtrackProjVersion', childProjectVersion);
         mockTaskLib.setInput('dtrackParentProjName', parentProjectName);
@@ -219,7 +219,7 @@ describe('Task Integration Tests', () => {
         
         // Setup the task input parameters with dtrackIsLatest=true
         mockTaskLib.setInput('dtrackURI', BASE_URL);
-        mockTaskLib.setInput('dtrackAPIKey', apiKey);
+        mockTaskLib.setInput('dtrackAPIKey', getTestApiKey('Project-Creator'));
         mockTaskLib.setInput('dtrackProjName', projectName);
         mockTaskLib.setInput('dtrackProjVersion', projectVersion);
         mockTaskLib.setInput('dtrackProjClassifier', 'APPLICATION');
@@ -262,7 +262,7 @@ describe('Task Integration Tests', () => {
         
         // Setup the task input parameters to create child project
         mockTaskLib.setInput('dtrackURI', BASE_URL);
-        mockTaskLib.setInput('dtrackAPIKey', apiKey);
+        mockTaskLib.setInput('dtrackAPIKey', getTestApiKey('Project-Creator'));
         mockTaskLib.setInput('dtrackProjName', childProjectName);
         mockTaskLib.setInput('dtrackProjVersion', childProjectVersion);
         mockTaskLib.setInput('dtrackParentProjName', parentProjectName);
@@ -308,7 +308,7 @@ describe('Task Integration Tests', () => {
         
         // Setup the task input parameters to create child project
         mockTaskLib.setInput('dtrackURI', BASE_URL);
-        mockTaskLib.setInput('dtrackAPIKey', apiKey);
+        mockTaskLib.setInput('dtrackAPIKey', getTestApiKey('Project-Creator'));
         mockTaskLib.setInput('dtrackProjName', childProjectName);
         mockTaskLib.setInput('dtrackProjVersion', childProjectVersion);
         mockTaskLib.setInput('dtrackParentProjName', parentProjectName);
@@ -355,7 +355,7 @@ describe('Task Integration Tests', () => {
         
         // Setup the task input parameters to upload to existing project
         mockTaskLib.setInput('dtrackURI', BASE_URL);
-        mockTaskLib.setInput('dtrackAPIKey', apiKey);
+        mockTaskLib.setInput('dtrackAPIKey', getTestApiKey('BOM-Upload-Viewer'));
         mockTaskLib.setInput('dtrackProjId', projectId);
         mockTaskLib.setInput('thresholdAction', 'warn');
         mockTaskLib.setInput('thresholdCritical', '1');
@@ -408,7 +408,7 @@ describe('Task Integration Tests', () => {
         
         // Setup the task input parameters for updating the project
         mockTaskLib.setInput('dtrackURI', BASE_URL);
-        mockTaskLib.setInput('dtrackAPIKey', apiKey);
+        mockTaskLib.setInput('dtrackAPIKey', getTestApiKey('Portfolio-Manager'));
         mockTaskLib.setInput('dtrackProjId', projectId);
         mockTaskLib.setInput('dtrackProjDescription', description);
         mockTaskLib.setInput('dtrackProjClassifier', classifier);
