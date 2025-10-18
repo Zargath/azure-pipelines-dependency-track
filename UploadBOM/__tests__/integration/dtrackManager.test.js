@@ -1,9 +1,13 @@
 const path = require('path');
 const fs = require('fs');
+const mockTaskLib = require('./mocks/mockTaskLib');
 const DTrackClient = require('../../src/dtrackClient').default;
 const DTrackManager = require('../../src/dtrackManager').default;
 const DTrackTestFixture = require('./setup/DTrackTestFixture');
 const { getTestApiKey, generateUniqueName } = require('./test-utils');
+
+// Mock the Azure DevOps task library to prevent localization warnings
+jest.mock('azure-pipelines-task-lib/task', () => mockTaskLib);
 
 describe('DTrackManager Integration Tests - Parent and Child Projects', () => {
     const BASE_URL = 'https://localhost:8080';
