@@ -5,6 +5,7 @@ class TaskParametersUtility {
     static GetParameters() {
         let dtrackAPIKey;
         let dtrackURI;
+        let isLatest;
 
         let serviceConnectionId = tl.getInput('serviceConnection', false);
         if (serviceConnectionId) {
@@ -14,6 +15,12 @@ class TaskParametersUtility {
         else {
             dtrackURI = tl.getInput('dtrackURI', true);
             dtrackAPIKey = tl.getInput('dtrackAPIKey', true);
+        }
+
+        try {
+            isLatest = tl.getBoolInput('dtrackIsLatest', true);
+        } catch {
+            // Leave isLatest undefined if input is not a valid boolean.
         }
 
         let params = {
@@ -30,7 +37,7 @@ class TaskParametersUtility {
             isProjectAutoCreated: tl.getBoolInput('dtrackProjAutoCreate', false),
             parentProjectName: tl.getInput('dtrackParentProjName', false),
             parentProjectVersion: tl.getInput('dtrackParentProjVersion', false),
-            isLatest: tl.getBoolInput('dtrackIsLatest', false),
+            isLatest: isLatest,
             bomFilePath: tl.getPathInput('bomFilePath', true, true),
             dtrackAPIKey: dtrackAPIKey,
             dtrackURI: dtrackURI,

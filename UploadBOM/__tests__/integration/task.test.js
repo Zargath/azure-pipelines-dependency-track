@@ -458,4 +458,81 @@ describe('Task Integration Tests', () => {
         expect(updatedProjectInfo.name).toBe(projectName);
         expect(updatedProjectInfo.version).toBe(projectVersion);
     });
+
+    it('should preserve existing project properties when uploading BOM without setting properties', async () => {
+        // Arrange
+        const projectName = generateUniqueName('task-test-preserve-properties');
+        const projectVersion = '1.0.0';
+        
+        // First create the project
+        const projectId = await dTrackTestFixture.createProject(projectName, projectVersion);
+        expect(projectId).toBeTruthy();
+        
+        // Set up initial properties for the project
+        const client = new DTrackClient(BASE_URL, apiKey, caFile);
+        const initialDescription = 'Initial test project description';
+        const initialClassifier = 'APPLICATION';
+        const initialSwidTagId = 'initial-swidTag123';
+        const initialGroup = 'initial-test-group';
+        const initialTags = [{ name: 'initial-tag1' }, { name: 'initial-tag2' }];
+        const initialIsLatest = true;
+        
+        // Update the project with initial properties
+        await client.updateProject(
+            projectId, 
+            initialDescription, 
+            initialClassifier, 
+            initialSwidTagId, 
+            initialGroup, 
+            initialTags, 
+            initialIsLatest
+        );
+        
+        // Verify initial properties were set correctly
+        const initialProjectInfo = await client.getProjectInfo(projectId);
+        expect(initialProjectInfo.description).toBe(initialDescription);
+        expect(initialProjectInfo.classifier).toBe(initialClassifier);
+        expect(initialProjectInfo.swidTagId).toBe(initialSwidTagId);
+        expect(initialProjectInfo.group).toBe(initialGroup);
+        expect(initialProjectInfo.isLatest).toBe(initialIsLatest);
+        expect(initialProjectInfo.tags).toHaveLength(initialTags.length);
+        
+        // Setup the task input parameters to upload BOM without setting any properties
+        mockTaskLib.setInput('dtrackURI', BASE_URL);
+        mockTaskLib.setInput('dtrackAPIKey', getTestApiKey('BOM-Upload-Viewer'));
+        mockTaskLib.setInput('dtrackProjId', projectId);
+        mockTaskLib.setPathInput('bomFilePath', testBomFilePath, true, true);
+        mockTaskLib.setStats(testBomFilePath, { isFile: () => true });
+        mockTaskLib.setPathInput('caFilePath', caFilePath, true, true);
+        mockTaskLib.setStats(caFilePath, { isFile: () => true });
+        
+        // Run the task module (BOM upload only, no property updates)
+        await run();
+        
+        // Get project info after BOM upload
+        const finalProjectInfo = await client.getProjectInfo(projectId);
+        
+        // Verify that the BOM was uploaded successfully
+        expect(finalProjectInfo.lastBomImport).toBeTruthy();
+        expect(new Date(finalProjectInfo.lastBomImport).getTime()).toBeGreaterThan(new Date(initialProjectInfo.lastBomImport || 0).getTime());
+        
+        // Assert that all original properties remain unchanged
+        expect(finalProjectInfo.description).toBe(initialDescription);
+        //expect(finalProjectInfo.classifier).toBe(initialClassifier); // Set by BOM
+        //expect(finalProjectInfo.swidTagId).toBe(initialSwidTagId); // Set by BOM
+        expect(finalProjectInfo.group).toBe(initialGroup);
+        expect(finalProjectInfo.isLatest).toBe(initialIsLatest);
+        
+        // Check that tags are preserved
+        expect(finalProjectInfo.tags).toHaveLength(initialTags.length);
+        const finalTags = finalProjectInfo.tags.map(tag => tag.name);
+        const expectedTags = initialTags.map(tag => tag.name);
+        expectedTags.forEach(tag => {
+            expect(finalTags).toContain(tag);
+        });
+        
+        // Ensure name and version haven't changed
+        expect(finalProjectInfo.name).toBe(projectName);
+        expect(finalProjectInfo.version).toBe(projectVersion);
+    });
 });
