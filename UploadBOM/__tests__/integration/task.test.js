@@ -475,6 +475,71 @@ describe('Task Integration Tests', () => {
         expect(updatedProjectInfo.version).toBe(projectVersion);
     });
 
+    it('should update project properties and preserve isLatest if isLatest is not provided', async () => {
+        // Arrange
+        const projectName = generateUniqueName('task-test-update-project');
+        const projectVersion = '1.0.0';
+        
+        // First create the project
+        const projectId = await dTrackTestFixture.createProject(projectName, projectVersion);
+        expect(projectId).toBeTruthy();
+        
+        // Set up the update parameters
+        const initialDescription = 'Updated test project description';
+        const initialIsLatest = true;
+
+        const description = 'New test project description';
+        
+        const client = new DTrackClient(BASE_URL, apiKey, caFile);
+        await client.updateProject(
+            projectId, 
+            initialDescription, 
+            undefined, 
+            undefined, 
+            undefined, 
+            undefined, 
+            initialIsLatest
+        );
+        
+        // Verify initial properties were set correctly
+        const initialProjectInfo = await client.getProjectInfo(projectId);
+        expect(initialProjectInfo.description).toBe(initialDescription);
+        expect(initialProjectInfo.isLatest).toBe(initialIsLatest);
+        
+        // Setup the task input parameters for updating the project
+        mockTaskLib.setInput('dtrackURI', BASE_URL);
+        mockTaskLib.setInput('dtrackAPIKey', getTestApiKey('Portfolio-Manager'));
+        mockTaskLib.setInput('dtrackProjId', projectId);
+        mockTaskLib.setInput('dtrackProjDescription', description);
+        mockTaskLib.setPathInput('bomFilePath', testBomFilePath, true, true);
+        mockTaskLib.setStats(testBomFilePath, { isFile: () => true });
+        mockTaskLib.setPathInput('caFilePath', caFilePath, true, true);
+        mockTaskLib.setStats(caFilePath, { isFile: () => true });
+        
+        // Run the task module and capture the token
+        const taskResult = await run();
+        expect(taskResult.token).toBeTruthy();
+        
+        // Wait for BOM processing to complete
+        await waitForBomProcessing(client, taskResult.token);
+        
+        // Get updated project info
+        const updatedProjectInfo = await client.getProjectInfo(projectId);
+        
+        // Assert each property was updated correctly
+        expect(updatedProjectInfo.description).toBe(description);
+        
+        // Verify the values have actually changed from the initial state
+        expect(updatedProjectInfo.description).not.toBe(initialProjectInfo.description);
+        
+        // Check is latest flag remains unchanged
+        expect(updatedProjectInfo.isLatest).toBe(initialProjectInfo.isLatest);
+        
+        // Ensure name and version haven't changed
+        expect(updatedProjectInfo.name).toBe(projectName);
+        expect(updatedProjectInfo.version).toBe(projectVersion);
+    });
+
     it('should preserve existing project properties when uploading BOM without setting properties', async () => {
         // Arrange
         const projectName = generateUniqueName('task-test-preserve-properties');
