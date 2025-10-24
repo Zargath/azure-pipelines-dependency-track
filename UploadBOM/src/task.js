@@ -102,6 +102,12 @@ const run = async () => {
       tl.setResult(tl.TaskResult.SucceededWithIssues, err)
     }
   }
+
+  // Return useful information for testing
+  return {
+    token,
+    projectId
+  };
 };
 
 // Only auto-run in production environment, not during tests

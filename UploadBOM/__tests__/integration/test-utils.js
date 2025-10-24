@@ -42,8 +42,62 @@ function getTestBom() {
   }
 }
 
+async function waitForBomProcessing(client, token, maxWaitTime = 4000, pollInterval = 500) {
+  const startTime = Date.now();
+  let processing = true;
+  
+  console.log(`Waiting for BOM processing to complete for token: ${token}`);
+  
+  while (processing && (Date.now() - startTime) < maxWaitTime) {
+    await new Promise(resolve => setTimeout(resolve, pollInterval));
+    
+    try {
+      processing = await client.pullProcessingStatusAsync(token);
+      console.log(`BOM processing status: ${processing ? 'still processing' : 'completed'}`);
+    } catch (error) {
+      console.warn('Error checking processing status:', error.message);
+      // Continue waiting - the endpoint might not be immediately available
+      // or might return an error while processing is still in progress
+    }
+  }
+  
+  if (processing) {
+    throw new Error(`BOM processing did not complete within ${maxWaitTime}ms`);
+  }
+  
+  console.log('BOM processing completed successfully');
+}
+
+async function waitForMetricsRefresh(client, projectId, lastBomImport, maxWaitTime = 4000, pollInterval = 500) {
+  const startTime = Date.now();
+  const targetDate = new Date(lastBomImport);
+  let lastOccurrence;
+  
+  console.log(`Waiting for metrics refresh after BOM import: ${targetDate.toISOString()}`);
+  
+  do {
+    await new Promise(resolve => setTimeout(resolve, pollInterval));
+    
+    try {
+      lastOccurrence = await client.getLastMetricCalculationDate(projectId);
+      console.log(`Last metrics calculation: ${new Date(lastOccurrence).toISOString()}`);
+    } catch (error) {
+      console.warn('Error checking metrics refresh:', error.message);
+      lastOccurrence = new Date(0); // Set to epoch to continue waiting
+    }
+    
+    if ((Date.now() - startTime) >= maxWaitTime) {
+      throw new Error(`Metrics refresh did not complete within ${maxWaitTime}ms`);
+    }
+  } while (new Date(lastOccurrence) < targetDate);
+  
+  console.log('Metrics refresh completed successfully');
+}
+
 module.exports = {
   getTestApiKey,
   generateUniqueName,
-  getTestBom
+  getTestBom,
+  waitForBomProcessing,
+  waitForMetricsRefresh
 };

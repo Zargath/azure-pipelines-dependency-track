@@ -24,6 +24,19 @@ class DtrackManager {
 
   async updateProject(projectId, description, classifier, swidTagId, group, tags, isLatest) {
     try {
+      // Check if any update parameters are actually set
+      const hasUpdateParams = description || 
+                              classifier || 
+                              swidTagId || 
+                              group || 
+                              (tags && tags.length > 0) || 
+                              typeof isLatest === 'boolean';
+
+      if (!hasUpdateParams) {
+        console.log(localize('NoProjectChanges'));
+        return;
+      }
+
       let updatedInfo = {};
 
       let projectInfo = await this.getProjectInfo(projectId);
