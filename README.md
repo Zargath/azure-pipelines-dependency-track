@@ -98,6 +98,28 @@ Provide **one** of the following:
 
 ---
 
+## 🗝️ Required Permissions
+
+The following table outlines the minimum permissions required in Dependency-Track for each operation:
+
+| Use Case | Required Permissions |
+|----------|---------------------|
+| **Basic upload to existing project** | `BOM_UPLOAD` |
+| **Upload and create project** | `BOM_UPLOAD` + `PROJECT_CREATION_UPLOAD` |
+| **Use thresholds** | `VIEW_PORTFOLIO` |
+| **Update project properties** | `PORTFOLIO_MANAGEMENT` |
+
+### Recommended Setup
+
+For most CI/CD scenarios:
+```
+BOM_UPLOAD + PROJECT_CREATION_UPLOAD + VIEW_PORTFOLIO
+```
+
+Add `PORTFOLIO_MANAGEMENT` if you need to set project descriptions, tags, or other properties.
+
+---
+
 ## 🔒 Threshold Controls
 
 Use these inputs to warn or fail the build based on detected vulnerabilities:

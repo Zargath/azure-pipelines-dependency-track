@@ -158,7 +158,7 @@ describe('DtrackManager', () => {
       mockDtrackClient.getProjectInfo.mockRejectedValue(new Error(errorMessage));
 
       // Act & Assert
-      await expect(dtrackManager.updateProject(projectId))
+      await expect(dtrackManager.updateProject(projectId, "New description", null, null, null, [], null))
         .rejects
         .toThrow('ProjectUpdateFailed: Update failed');
     });
