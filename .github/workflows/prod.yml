@@ -34,7 +34,7 @@ jobs:
         tfx extension create --output-path PackageOutput
     
     - name: Upload vsix Artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: Extension-Package
         path: PackageOutput
