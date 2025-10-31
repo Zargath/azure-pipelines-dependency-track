@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs');
-const { getTestApiKey, generateUniqueName } = require('./test-utils');
+const { getTestApiKey, generateUniqueName, waitForBomProcessing, waitForMetricsRefresh } = require('./test-utils');
 const DTrackClient = require('../../src/dtrackClient').default;
 const mockTaskLib = require('./mocks/mockTaskLib');
 const DTrackTestFixture = require('./setup/DTrackTestFixture');
@@ -56,7 +56,7 @@ describe('Task Integration Tests', () => {
         
         // Setup the task input parameters
         mockTaskLib.setInput('dtrackURI', BASE_URL);
-        mockTaskLib.setInput('dtrackAPIKey', apiKey);
+        mockTaskLib.setInput('dtrackAPIKey', getTestApiKey('Project-Creator'));
         mockTaskLib.setInput('dtrackProjName', projectName);
         mockTaskLib.setInput('dtrackProjVersion', projectVersion);
         mockTaskLib.setPathInput('bomFilePath', testBomFilePath, true, true);
@@ -65,11 +65,13 @@ describe('Task Integration Tests', () => {
         mockTaskLib.setStats(testBomFilePath, { isFile: () => true });
         mockTaskLib.setStats(caFilePath, { isFile: () => true });
 
-        // Run the task module
-        await run();
+        // Run the task module and capture the token
+        const taskResult = await run();
+        expect(taskResult.token).toBeTruthy();
         
-        // Verify the project was created
+        // Create client and wait for BOM processing to complete
         const client = new DTrackClient(BASE_URL, apiKey, caFile);
+        await waitForBomProcessing(client, taskResult.token);
         
         // Check that project exists
         const projectId = await client.getProjectUUID(projectName, projectVersion);
@@ -96,18 +98,21 @@ describe('Task Integration Tests', () => {
         
         // Setup the task input parameters to upload to existing project
         mockTaskLib.setInput('dtrackURI', BASE_URL);
-        mockTaskLib.setInput('dtrackAPIKey', apiKey);
+        mockTaskLib.setInput('dtrackAPIKey', getTestApiKey('BOM-Upload-Only'));
         mockTaskLib.setInput('dtrackProjId', projectId);
         mockTaskLib.setPathInput('bomFilePath', testBomFilePath, true, true);
         mockTaskLib.setStats(testBomFilePath, { isFile: () => true });
         mockTaskLib.setPathInput('caFilePath', caFilePath, true, true);
         mockTaskLib.setStats(caFilePath, { isFile: () => true });
         
-        // Run the task module
-        await run();
+        // Run the task module and capture the token
+        const taskResult = await run();
+        expect(taskResult.token).toBeTruthy();
+        expect(taskResult.projectId).toBe(projectId);
         
-        // Verify the BOM was uploaded
+        // Create client and wait for BOM processing to complete
         const client = new DTrackClient(BASE_URL, apiKey, caFile);
+        await waitForBomProcessing(client, taskResult.token);
         
         // Get project info and check if lastBomImport has a value
         const projectInfo = await client.getProjectInfo(projectId);
@@ -127,7 +132,7 @@ describe('Task Integration Tests', () => {
         
         // Setup the task input parameters to create child project
         mockTaskLib.setInput('dtrackURI', BASE_URL);
-        mockTaskLib.setInput('dtrackAPIKey', apiKey);
+        mockTaskLib.setInput('dtrackAPIKey', getTestApiKey('Project-Creator'));
         mockTaskLib.setInput('dtrackProjName', childProjectName);
         mockTaskLib.setInput('dtrackProjVersion', childProjectVersion);
         mockTaskLib.setInput('dtrackParentProjName', parentProjectName);
@@ -139,11 +144,13 @@ describe('Task Integration Tests', () => {
         mockTaskLib.setPathInput('caFilePath', caFilePath, true, true);
         mockTaskLib.setStats(caFilePath, { isFile: () => true });
         
-        // Run the task module
-        await run();
+        // Run the task module and capture the token
+        const taskResult = await run();
+        expect(taskResult.token).toBeTruthy();
         
-        // Verify the child project was created
+        // Create client and wait for BOM processing to complete
         const client = new DTrackClient(BASE_URL, apiKey, caFile);
+        await waitForBomProcessing(client, taskResult.token);
         
         // Check that child project exists
         const childProjectId = await client.getProjectUUID(childProjectName, childProjectVersion);
@@ -156,7 +163,6 @@ describe('Task Integration Tests', () => {
         
         // Verify child-parent relationship
         const childrenResponse = await dTrackTestFixture.getProjectChildren(parentProjectId);
-        
         const childrenIds = childrenResponse.map(project => project.uuid);
         expect(childrenIds).toContain(childProjectId);
     });
@@ -175,12 +181,11 @@ describe('Task Integration Tests', () => {
         
         // Setup the task input parameters with dtrackIsLatest=true
         mockTaskLib.setInput('dtrackURI', BASE_URL);
-        mockTaskLib.setInput('dtrackAPIKey', apiKey);
+        mockTaskLib.setInput('dtrackAPIKey', getTestApiKey('Project-Creator'));
         mockTaskLib.setInput('dtrackProjName', childProjectName);
         mockTaskLib.setInput('dtrackProjVersion', childProjectVersion);
         mockTaskLib.setInput('dtrackParentProjName', parentProjectName);
         mockTaskLib.setInput('dtrackParentProjVersion', parentProjectVersion);
-        mockTaskLib.setInput('dtrackProjClassifier', 'APPLICATION');
         mockTaskLib.setPathInput('bomFilePath', testBomFilePath, true, true);
         mockTaskLib.setBoolInput('dtrackProjAutoCreate', true);
         mockTaskLib.setBoolInput('dtrackIsLatest', true);
@@ -188,11 +193,13 @@ describe('Task Integration Tests', () => {
         mockTaskLib.setPathInput('caFilePath', caFilePath, true, true);
         mockTaskLib.setStats(caFilePath, { isFile: () => true });
         
-        // Run the task module
-        await run();
+        // Run the task module and capture the token
+        const taskResult = await run();
+        expect(taskResult.token).toBeTruthy();
         
-        // Verify the child project was created
+        // Create client and wait for BOM processing to complete
         const client = new DTrackClient(BASE_URL, apiKey, caFile);
+        await waitForBomProcessing(client, taskResult.token);
         
         // Check that child project exists
         const childProjectId = await client.getProjectUUID(childProjectName, childProjectVersion);
@@ -219,10 +226,9 @@ describe('Task Integration Tests', () => {
         
         // Setup the task input parameters with dtrackIsLatest=true
         mockTaskLib.setInput('dtrackURI', BASE_URL);
-        mockTaskLib.setInput('dtrackAPIKey', apiKey);
+        mockTaskLib.setInput('dtrackAPIKey', getTestApiKey('Project-Creator'));
         mockTaskLib.setInput('dtrackProjName', projectName);
         mockTaskLib.setInput('dtrackProjVersion', projectVersion);
-        mockTaskLib.setInput('dtrackProjClassifier', 'APPLICATION');
         mockTaskLib.setPathInput('bomFilePath', testBomFilePath, true, true);
         mockTaskLib.setBoolInput('dtrackProjAutoCreate', true);
         mockTaskLib.setBoolInput('dtrackIsLatest', true);
@@ -230,11 +236,13 @@ describe('Task Integration Tests', () => {
         mockTaskLib.setPathInput('caFilePath', caFilePath, true, true);
         mockTaskLib.setStats(caFilePath, { isFile: () => true });
         
-        // Run the task module
-        await run();
+        // Run the task module and capture the token
+        const taskResult = await run();
+        expect(taskResult.token).toBeTruthy();
         
-        // Verify the project was created
+        // Create client and wait for BOM processing to complete
         const client = new DTrackClient(BASE_URL, apiKey, caFile);
+        await waitForBomProcessing(client, taskResult.token);
         
         // Check that child project exists
         const projectId = await client.getProjectUUID(projectName, projectVersion);
@@ -262,7 +270,7 @@ describe('Task Integration Tests', () => {
         
         // Setup the task input parameters to create child project
         mockTaskLib.setInput('dtrackURI', BASE_URL);
-        mockTaskLib.setInput('dtrackAPIKey', apiKey);
+        mockTaskLib.setInput('dtrackAPIKey', getTestApiKey('Project-Creator'));
         mockTaskLib.setInput('dtrackProjName', childProjectName);
         mockTaskLib.setInput('dtrackProjVersion', childProjectVersion);
         mockTaskLib.setInput('dtrackParentProjName', parentProjectName);
@@ -273,11 +281,13 @@ describe('Task Integration Tests', () => {
         mockTaskLib.setPathInput('caFilePath', caFilePath, true, true);
         mockTaskLib.setStats(caFilePath, { isFile: () => true });
         
-        // Run the task module
-        await run();
+        // Run the task module and capture the token
+        const taskResult = await run();
+        expect(taskResult.token).toBeTruthy();
         
-        // Verify the child project was created
+        // Create client and wait for BOM processing to complete
         const client = new DTrackClient(BASE_URL, apiKey, caFile);
+        await waitForBomProcessing(client, taskResult.token);
         
         // Check that child project exists
         const childProjectId = await client.getProjectUUID(childProjectName, childProjectVersion);
@@ -290,7 +300,6 @@ describe('Task Integration Tests', () => {
         
         // Verify child-parent relationship
         const childrenResponse = await dTrackTestFixture.getProjectChildren(parentProjectId);
-        
         const childrenIds = childrenResponse.map(project => project.uuid);
         expect(childrenIds).toContain(childProjectId);
     });
@@ -308,7 +317,7 @@ describe('Task Integration Tests', () => {
         
         // Setup the task input parameters to create child project
         mockTaskLib.setInput('dtrackURI', BASE_URL);
-        mockTaskLib.setInput('dtrackAPIKey', apiKey);
+        mockTaskLib.setInput('dtrackAPIKey', getTestApiKey('Project-Creator'));
         mockTaskLib.setInput('dtrackProjName', childProjectName);
         mockTaskLib.setInput('dtrackProjVersion', childProjectVersion);
         mockTaskLib.setInput('dtrackParentProjName', parentProjectName);
@@ -319,11 +328,13 @@ describe('Task Integration Tests', () => {
         mockTaskLib.setPathInput('caFilePath', caFilePath, true, true);
         mockTaskLib.setStats(caFilePath, { isFile: () => true });
         
-        // Run the task module
-        await run();
+        // Run the task module and capture the token
+        const taskResult = await run();
+        expect(taskResult.token).toBeTruthy();
         
-        // Verify the child project was created
+        // Create client and wait for BOM processing to complete
         const client = new DTrackClient(BASE_URL, apiKey, caFile);
+        await waitForBomProcessing(client, taskResult.token);
         
         // Check that child project exists
         const childProjectId = await client.getProjectUUID(childProjectName, childProjectVersion);
@@ -336,7 +347,6 @@ describe('Task Integration Tests', () => {
         
         // Verify child-parent relationship
         const childrenResponse = await dTrackTestFixture.getProjectChildren(parentProjectId);
-        
         const childrenIds = childrenResponse.map(project => project.uuid);
         expect(childrenIds).toContain(childProjectId);
     });
@@ -355,7 +365,7 @@ describe('Task Integration Tests', () => {
         
         // Setup the task input parameters to upload to existing project
         mockTaskLib.setInput('dtrackURI', BASE_URL);
-        mockTaskLib.setInput('dtrackAPIKey', apiKey);
+        mockTaskLib.setInput('dtrackAPIKey', getTestApiKey('BOM-Upload-Viewer'));
         mockTaskLib.setInput('dtrackProjId', projectId);
         mockTaskLib.setInput('thresholdAction', 'warn');
         mockTaskLib.setInput('thresholdCritical', '1');
@@ -408,7 +418,7 @@ describe('Task Integration Tests', () => {
         
         // Setup the task input parameters for updating the project
         mockTaskLib.setInput('dtrackURI', BASE_URL);
-        mockTaskLib.setInput('dtrackAPIKey', apiKey);
+        mockTaskLib.setInput('dtrackAPIKey', getTestApiKey('Portfolio-Manager'));
         mockTaskLib.setInput('dtrackProjId', projectId);
         mockTaskLib.setInput('dtrackProjDescription', description);
         mockTaskLib.setInput('dtrackProjClassifier', classifier);
@@ -421,8 +431,12 @@ describe('Task Integration Tests', () => {
         mockTaskLib.setPathInput('caFilePath', caFilePath, true, true);
         mockTaskLib.setStats(caFilePath, { isFile: () => true });
         
-        // Run the task module with only update parameters (no BOM upload)
-        await run();
+        // Run the task module and capture the token
+        const taskResult = await run();
+        expect(taskResult.token).toBeTruthy();
+        
+        // Wait for BOM processing to complete
+        await waitForBomProcessing(client, taskResult.token);
         
         // Get updated project info
         const updatedProjectInfo = await client.getProjectInfo(projectId);
@@ -457,5 +471,151 @@ describe('Task Integration Tests', () => {
         // Ensure name and version haven't changed
         expect(updatedProjectInfo.name).toBe(projectName);
         expect(updatedProjectInfo.version).toBe(projectVersion);
+    });
+
+    it('should update project properties and preserve isLatest if isLatest is not provided', async () => {
+        // Arrange
+        const projectName = generateUniqueName('task-test-update-project');
+        const projectVersion = '1.0.0';
+        
+        // First create the project
+        const projectId = await dTrackTestFixture.createProject(projectName, projectVersion);
+        expect(projectId).toBeTruthy();
+        
+        // Set up the update parameters
+        const initialDescription = 'Updated test project description';
+        const initialIsLatest = true;
+
+        const description = 'New test project description';
+        
+        const client = new DTrackClient(BASE_URL, apiKey, caFile);
+        await client.updateProject(
+            projectId, 
+            initialDescription, 
+            undefined, 
+            undefined, 
+            undefined, 
+            undefined, 
+            initialIsLatest
+        );
+        
+        // Verify initial properties were set correctly
+        const initialProjectInfo = await client.getProjectInfo(projectId);
+        expect(initialProjectInfo.description).toBe(initialDescription);
+        expect(initialProjectInfo.isLatest).toBe(initialIsLatest);
+        
+        // Setup the task input parameters for updating the project
+        mockTaskLib.setInput('dtrackURI', BASE_URL);
+        mockTaskLib.setInput('dtrackAPIKey', getTestApiKey('Portfolio-Manager'));
+        mockTaskLib.setInput('dtrackProjId', projectId);
+        mockTaskLib.setInput('dtrackProjDescription', description);
+        mockTaskLib.setPathInput('bomFilePath', testBomFilePath, true, true);
+        mockTaskLib.setStats(testBomFilePath, { isFile: () => true });
+        mockTaskLib.setPathInput('caFilePath', caFilePath, true, true);
+        mockTaskLib.setStats(caFilePath, { isFile: () => true });
+        
+        // Run the task module and capture the token
+        const taskResult = await run();
+        expect(taskResult.token).toBeTruthy();
+        
+        // Wait for BOM processing to complete
+        await waitForBomProcessing(client, taskResult.token);
+        
+        // Get updated project info
+        const updatedProjectInfo = await client.getProjectInfo(projectId);
+        
+        // Assert each property was updated correctly
+        expect(updatedProjectInfo.description).toBe(description);
+        
+        // Verify the values have actually changed from the initial state
+        expect(updatedProjectInfo.description).not.toBe(initialProjectInfo.description);
+        
+        // Check is latest flag remains unchanged
+        expect(updatedProjectInfo.isLatest).toBe(initialProjectInfo.isLatest);
+        
+        // Ensure name and version haven't changed
+        expect(updatedProjectInfo.name).toBe(projectName);
+        expect(updatedProjectInfo.version).toBe(projectVersion);
+    });
+
+    it('should preserve existing project properties when uploading BOM without setting properties', async () => {
+        // Arrange
+        const projectName = generateUniqueName('task-test-preserve-properties');
+        const projectVersion = '1.0.0';
+        
+        // First create the project
+        const projectId = await dTrackTestFixture.createProject(projectName, projectVersion);
+        expect(projectId).toBeTruthy();
+        
+        // Set up initial properties for the project
+        const client = new DTrackClient(BASE_URL, apiKey, caFile);
+        const initialDescription = 'Initial test project description';
+        const initialClassifier = 'APPLICATION';
+        const initialSwidTagId = 'initial-swidTag123';
+        const initialGroup = 'initial-test-group';
+        const initialTags = [{ name: 'initial-tag1' }, { name: 'initial-tag2' }];
+        const initialIsLatest = true;
+        
+        // Update the project with initial properties
+        await client.updateProject(
+            projectId, 
+            initialDescription, 
+            initialClassifier, 
+            initialSwidTagId, 
+            initialGroup, 
+            initialTags, 
+            initialIsLatest
+        );
+        
+        // Verify initial properties were set correctly
+        const initialProjectInfo = await client.getProjectInfo(projectId);
+        expect(initialProjectInfo.description).toBe(initialDescription);
+        expect(initialProjectInfo.classifier).toBe(initialClassifier);
+        expect(initialProjectInfo.swidTagId).toBe(initialSwidTagId);
+        expect(initialProjectInfo.group).toBe(initialGroup);
+        expect(initialProjectInfo.isLatest).toBe(initialIsLatest);
+        expect(initialProjectInfo.tags).toHaveLength(initialTags.length);
+        
+        // Setup the task input parameters to upload BOM without setting any properties
+        mockTaskLib.setInput('dtrackURI', BASE_URL);
+        mockTaskLib.setInput('dtrackAPIKey', getTestApiKey('BOM-Upload-Viewer'));
+        mockTaskLib.setInput('dtrackProjId', projectId);
+        mockTaskLib.setPathInput('bomFilePath', testBomFilePath, true, true);
+        mockTaskLib.setStats(testBomFilePath, { isFile: () => true });
+        mockTaskLib.setPathInput('caFilePath', caFilePath, true, true);
+        mockTaskLib.setStats(caFilePath, { isFile: () => true });
+        
+        // Run the task module and capture the token
+        const taskResult = await run();
+        expect(taskResult.token).toBeTruthy();
+        
+        // Wait for BOM processing to complete
+        await waitForBomProcessing(client, taskResult.token);
+        
+        // Get project info after BOM upload
+        const finalProjectInfo = await client.getProjectInfo(projectId);
+        
+        // Verify that the BOM was uploaded successfully
+        expect(finalProjectInfo.lastBomImport).toBeTruthy();
+        expect(new Date(finalProjectInfo.lastBomImport).getTime()).toBeGreaterThan(new Date(initialProjectInfo.lastBomImport || 0).getTime());
+        
+        // Assert that all original properties remain unchanged
+        expect(finalProjectInfo.description).toBe(initialDescription);
+        //expect(finalProjectInfo.classifier).toBe(initialClassifier); // Set by BOM
+        //expect(finalProjectInfo.swidTagId).toBe(initialSwidTagId); // Set by BOM
+        expect(finalProjectInfo.group).toBe(initialGroup);
+        expect(finalProjectInfo.isLatest).toBe(initialIsLatest);
+        
+        // Check that tags are preserved
+        expect(finalProjectInfo.tags).toHaveLength(initialTags.length);
+        const finalTags = finalProjectInfo.tags.map(tag => tag.name);
+        const expectedTags = initialTags.map(tag => tag.name);
+        expectedTags.forEach(tag => {
+            expect(finalTags).toContain(tag);
+        });
+        
+        // Ensure name and version haven't changed
+        expect(finalProjectInfo.name).toBe(projectName);
+        expect(finalProjectInfo.version).toBe(projectVersion);
     });
 });

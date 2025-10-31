@@ -10,4 +10,4 @@ run.cmd
 
 certs
 dtrack-data
-.test-api-key
+api-keys

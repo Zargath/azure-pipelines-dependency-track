@@ -2,6 +2,19 @@
  * Mock implementation of azure-pipelines-task-lib for testing
  */
 
+const path = require('path');
+const fs = require('fs');
+
+// Load task.json to get localized messages
+let taskMessages = {};
+try {
+    const taskJsonPath = path.join(__dirname, '../../../src/task.json');
+    const taskJson = JSON.parse(fs.readFileSync(taskJsonPath, 'utf8'));
+    taskMessages = taskJson.messages || {};
+} catch (error) {
+    console.warn('Could not load task.json messages for localization:', error.message);
+}
+
 // Store inputs, paths, stats and files for mocking
 const state = {
     inputs: {},
@@ -137,14 +150,21 @@ const mockTaskLib = {
     
     // Mock localization function
     loc: (key, ...params) => {
-        // Simple mock that returns the key if no params, or interpolates params into the key
-        if (params && params.length > 0) {
-            let result = key;
+        // First check if we have the localized message in task.json
+        let message = taskMessages[key];
+        
+        if (message && params && params.length > 0) {
+            // Replace %s placeholders with parameters
             params.forEach((param, index) => {
-                result = result.replace(`{${index}}`, param);
+                message = message.replace('%s', param);
             });
-            return result;
+            return message;
+        } else if (message) {
+            return message;
         }
+        
+        // Fallback: return the key if no localized message found
+        // This prevents the warning about missing localization
         return key;
     }
 };
