@@ -186,7 +186,6 @@ describe('Task Integration Tests', () => {
         mockTaskLib.setInput('dtrackProjVersion', childProjectVersion);
         mockTaskLib.setInput('dtrackParentProjName', parentProjectName);
         mockTaskLib.setInput('dtrackParentProjVersion', parentProjectVersion);
-        mockTaskLib.setInput('dtrackProjClassifier', 'APPLICATION');
         mockTaskLib.setPathInput('bomFilePath', testBomFilePath, true, true);
         mockTaskLib.setBoolInput('dtrackProjAutoCreate', true);
         mockTaskLib.setBoolInput('dtrackIsLatest', true);
@@ -230,7 +229,6 @@ describe('Task Integration Tests', () => {
         mockTaskLib.setInput('dtrackAPIKey', getTestApiKey('Project-Creator'));
         mockTaskLib.setInput('dtrackProjName', projectName);
         mockTaskLib.setInput('dtrackProjVersion', projectVersion);
-        mockTaskLib.setInput('dtrackProjClassifier', 'APPLICATION');
         mockTaskLib.setPathInput('bomFilePath', testBomFilePath, true, true);
         mockTaskLib.setBoolInput('dtrackProjAutoCreate', true);
         mockTaskLib.setBoolInput('dtrackIsLatest', true);
