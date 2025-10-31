@@ -77,7 +77,7 @@ class DtrackManager {
       }
 
       console.log(localize('CurrentProjectSettings'));
-      console.log(localize('projectSettings', projectId, projectInfo.name, projectInfo.version, projectInfo.description, projectInfo.classifier, projectInfo.swidTagId, projectInfo.group, JSON.stringify(projectInfo.tags), projectInfo.isLatest, projectInfo.active));
+      console.log(localize('projectSettings', projectId, projectInfo.name, projectInfo.version, projectInfo.description, projectInfo.classifier, projectInfo.swidTagId, projectInfo.group, JSON.stringify(projectInfo.tags), projectInfo.isLatest));
 
       if (Object.keys(updatedInfo).length === 0) {
         console.log(localize('NoProjectChanges'));
