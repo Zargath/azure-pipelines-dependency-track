@@ -60,7 +60,7 @@ jobs:
           tfx --version
 
       - name: Download artifact
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: Extension-Package
           path: package
