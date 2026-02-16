@@ -16,7 +16,7 @@
     "@babel/core": "^7.29.0",
     "@babel/plugin-transform-runtime": "^7.28.5",
     "@babel/runtime": "^7.28.6",
-    "azure-pipelines-task-lib": "^5.2.5",
+    "azure-pipelines-task-lib": "^5.2.6",
     "axios": "^1.13.5",
     "form-data": "^4.0.5"
   },
