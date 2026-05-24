@@ -91,7 +91,7 @@ Provide **one** of the following:
 | `dtrackProjTags` | Set the prohject tags. (Each tag on a new line) |
 | `dtrackProjSwidTagId` | Set the project SWID Tag Id |
 | `dtrackProjGroup` | Set the project Namespace / group / vendor identifier |
-| `dtrackProjClassifier` | Classifier (e.g., `APPLICATION`, `FRAMEWORK`, etc.) |
+| `dtrackProjClassifier` | Classifier for the project (e.g., `APPLICATION`, `FRAMEWORK`, etc.). Must be uppercase when used in YAML pipelines without quotes. |
 | `dtrackParentProjName` | Parent project name (with optional auto-create) |
 | `dtrackParentProjVersion` | Parent project version (with optional auto-create) |
 | `dtrackIsLatest` | Sets the project as the latest version. Defaults to false. |
