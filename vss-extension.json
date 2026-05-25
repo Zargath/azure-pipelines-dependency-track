@@ -25,9 +25,6 @@
   "categories": [
     "Azure Pipelines"
   ],
-  "scopes": [
-    "vso.build_execute"
-  ],
   "files": [
     {
       "path": "UploadBOM/node_modules",
