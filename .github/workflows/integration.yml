@@ -1,0 +1,44 @@
+name: CI - Integration Tests
+
+on:
+  pull_request:
+  schedule:
+    - cron: '0 22 * * 5'
+
+jobs:
+  integration_tests:
+    name: "Integration Tests"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Use Node.js 24.x
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.x
+
+      - name: Set up Docker Compose
+        run: sudo ln -sf /usr/libexec/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose
+
+      - name: Generate TLS certificates
+        run: bash __tests__/integration/setup/generate-certs.sh
+        working-directory: UploadBOM
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: UploadBOM
+
+      - name: Start Dependency Track environment
+        run: npm run docker:start
+        working-directory: UploadBOM
+
+      - name: Run integration tests
+        run: npm run test:integration
+        working-directory: UploadBOM
+
+      - name: Stop Dependency Track environment
+        if: always()
+        run: npm run docker:stop
+        working-directory: UploadBOM
