@@ -1,9 +1,5 @@
 name: CI/CD - Development
 
-permissions:
-  contents: read
-  packages: write
-
 on:
   pull_request:
 
@@ -11,6 +7,8 @@ jobs:
   build_package:
     name: "Build and Package Extension"
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
     - uses: actions/checkout@v6
       
@@ -23,13 +21,14 @@ jobs:
       run: |
         npm install
         npm run build
-        npm prune --production
       working-directory: UploadBOM
 
-    - name: Run Tests
-      run: |
-        npm install
-        npm test
+    - name: Run Unit Tests
+      run: npm test
+      working-directory: UploadBOM
+
+    - name: Prune dev dependencies
+      run: npm prune --production
       working-directory: UploadBOM
 
     - name: Upload Coverage Report
@@ -59,7 +58,10 @@ jobs:
     if: ${{ ! startsWith(github.head_ref, 'dependabot/') }}
     needs: build_package
     runs-on: ubuntu-latest
-    steps: 
+    permissions:
+      contents: read
+      packages: write
+    steps:
       - uses: actions/checkout@v6
         
       - name: Use Node.js 20.x

@@ -1,7 +1,6 @@
 # 🔐 Azure Pipelines Dependency-Track Extension
 
 [![CI](https://github.com/Zargath/azure-pipelines-dependency-track/actions/workflows/prod.yml/badge.svg)](https://github.com/Zargath/azure-pipelines-dependency-track/actions/workflows/prod.yml)
-[![Visual Studio Marketplace Installs - Azure DevOps Extension](https://img.shields.io/visual-studio-marketplace/azure-devops/installs/total/eshaar-me.vss-dependency-track-integration)](https://marketplace.visualstudio.com/items?itemName=eshaar-me.vss-dependency-track-integration)
 [![License](https://img.shields.io/github/license/Zargath/azure-pipelines-dependency-track)](https://github.com/Zargath/azure-pipelines-dependency-track/blob/main/LICENSE)
 
 Integrate [Dependency-Track](https://dependencytrack.org/) into your Azure DevOps pipelines to automatically upload and assess SBOM (Software Bill of Materials) files for known vulnerabilities.
@@ -33,10 +32,9 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- task: NodeTool@0
+- task: UseNode@1
   inputs:
-    versionSpec: '18.x'
-  displayName: 'Install Node.js'
+    version: '24.x'
 
 - script: |
     npm install
