@@ -53,7 +53,7 @@ wait_for_api_server() {
   docker-compose -f "$DOCKER_COMPOSE_PATH" ps
 
   # Increase timeout for containers still in "health: starting" state
-  local MAX_HEALTH_CHECK_RETRIES=60  # Increased from 30
+  local MAX_HEALTH_CHECK_RETRIES=25
 
   while [[ "$is_ready" == "false" && $attempts -lt $MAX_HEALTH_CHECK_RETRIES ]]; do
     # Check container health every 5 attempts

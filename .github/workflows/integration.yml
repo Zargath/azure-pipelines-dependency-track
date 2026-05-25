@@ -34,6 +34,11 @@ jobs:
         run: npm run docker:start
         working-directory: UploadBOM
 
+      - name: Dump apiserver logs on failure
+        if: failure()
+        run: docker logs dtrack-apiserver
+        working-directory: UploadBOM
+
       - name: Run integration tests
         run: npm run test:integration
         working-directory: UploadBOM
