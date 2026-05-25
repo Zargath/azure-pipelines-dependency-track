@@ -21,13 +21,14 @@ jobs:
       run: |
         npm install
         npm run build
-        npm prune --production
       working-directory: UploadBOM
 
-    - name: Run Tests
-      run: |
-        npm install
-        npm test
+    - name: Run Unit Tests
+      run: npm test
+      working-directory: UploadBOM
+
+    - name: Prune dev dependencies
+      run: npm prune --production
       working-directory: UploadBOM
 
     - name: Upload Coverage Report
