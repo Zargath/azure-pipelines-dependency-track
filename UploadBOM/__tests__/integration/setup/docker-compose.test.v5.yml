@@ -1,0 +1,57 @@
+version: '3'
+name: "dependency-track-test"
+
+services:
+  postgres:
+    container_name: dtrack-postgres
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: "dtrack"
+      POSTGRES_USER: "dtrack"
+      POSTGRES_PASSWORD: "dtrack"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+  apiserver:
+    container_name: dtrack-apiserver
+    image: ghcr.io/dependencytrack/apiserver:${DTRACK_MAJOR_VERSION:-5}-snapshot
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DT_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/dtrack"
+      DT_DATASOURCE_USERNAME: "dtrack"
+      DT_DATASOURCE_PASSWORD: "dtrack"
+    ports:
+      - "8080"
+    volumes:
+      - "./dtrack-data:/data"
+    restart: unless-stopped
+  frontend:
+    container_name: dtrack-frontend
+    image: ghcr.io/dependencytrack/frontend:${DTRACK_MAJOR_VERSION:-5}-snapshot
+    environment:
+      API_BASE_URL: "https://localhost:8080"
+    ports:
+      - "8081"
+    restart: unless-stopped
+  nginx:
+    image: nginx
+    ports:
+      - "8081:8081"
+      - "8080:8080"
+    volumes:
+      - ./nginx-config:/etc/nginx/conf.d
+      - ./certs:/etc/ssl/dtrack
+    restart: unless-stopped
+    depends_on:
+      - apiserver
+      - frontend
+
+volumes:
+  postgres-data: {}

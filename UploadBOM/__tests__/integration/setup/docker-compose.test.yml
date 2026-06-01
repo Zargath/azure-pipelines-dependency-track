@@ -4,7 +4,7 @@ name: "dependency-track-test"
 services:
   apiserver:
     container_name: dtrack-apiserver
-    image: dependencytrack/apiserver:snapshot
+    image: dependencytrack/apiserver:4-snapshot
     environment:
       ALPINE_BCRYPT_ROUNDS: "4"
       TELEMETRY_SUBMISSION_ENABLED_DEFAULT: "false"
@@ -16,7 +16,7 @@ services:
     restart: unless-stopped
   frontend:
     container_name: dtrack-frontend
-    image: dependencytrack/frontend:snapshot
+    image: dependencytrack/frontend:4-snapshot
     environment:
       API_BASE_URL: "https://localhost:8080"
     ports:
