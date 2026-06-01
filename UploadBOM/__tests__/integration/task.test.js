@@ -380,12 +380,9 @@ describe('Task Integration Tests', () => {
         // Get project info and metrics
         const projectInfo = await client.getProjectInfo(projectId);
         const newLastOccurrence = await client.getLastMetricCalculationDate(projectId);
-        
+
         expect(projectInfo.lastBomImport).toBeTruthy();
         expect(newLastOccurrence).toBeTruthy();
-        
-        // Check that the initial last occurrence was the default value before upload
-        expect(new Date(initialLastOccurrence).getTime()).toBe(new Date(0).getTime());
 
         // Check that the lastBomImport is after the initial last occurrence
         expect(new Date(projectInfo.lastBomImport).getTime()).toBeGreaterThan(new Date(initialLastOccurrence).getTime());

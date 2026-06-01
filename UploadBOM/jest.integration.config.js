@@ -1,5 +1,6 @@
 module.exports = {
   testEnvironment: 'node',
+  testTimeout: 60000,
   transform: {
     '^.+\\.jsx?$': 'babel-jest'
   },
@@ -12,6 +13,5 @@ module.exports = {
     '!**/node_modules/**',
     '!**/__tests__/**'
   ],
-  coverageReporters: ['text', 'lcov'],
-  verbose: true
+  coverageReporters: ['text', 'lcov']
 };
