@@ -152,6 +152,21 @@ These settings are used when Dependency Track is using a self-signed certificate
 - SBOM must be in [CycloneDX](https://cyclonedx.org/) format.
 - Use `dtrackProjAutoCreate: true` if the project might not exist yet.
 
+### Project property updates and BOM processing
+
+When any of the following inputs are set, the task will wait for Dependency-Track to finish processing the uploaded BOM **before** applying the project update:
+
+- `dtrackProjDescription`
+- `dtrackProjClassifier`
+- `dtrackProjSwidTagId`
+- `dtrackProjGroup`
+- `dtrackProjTags`
+- `dtrackIsLatest`
+
+This is required because Dependency-Track v5 synchronizes certain project fields from the BOM metadata during async processing, which would otherwise overwrite values set by the task. Waiting for processing to complete first ensures the values you configure are the ones that take effect.
+
+As a result, pipelines that set any of these properties will take longer to complete, proportional to the BOM processing time in your Dependency-Track instance.
+
 ---
 
 ## 📎 Links
