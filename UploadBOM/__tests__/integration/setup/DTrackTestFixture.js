@@ -48,12 +48,49 @@ class DTrackTestFixture {
   async getProjectChildren(projId) {
     try {
       const response = await this.axiosInstance.get(`/api/v1/project/${projId}/children`);
-      
+
       if (response.status === 200) {
         return response.data;
       }
       throw new Error(`Unexpected status code: ${response.status}`);
     } catch (error) {
+      throw { error, response: error.response };
+    }
+  }
+
+  /**
+   * Creates an internal vulnerability with PURL-based component matching.
+   * The internal analyzer will detect this vulnerability when any component
+   * whose PURL matches the given purlIdentity is processed.
+   *
+   * Requires VULNERABILITY_MANAGEMENT permission (admin key).
+   */
+  async createInternalVulnerability(vulnId, severity, purlIdentity) {
+    try {
+      const response = await this.axiosInstance.put('/api/v1/vulnerability', {
+        vulnId,
+        source: 'INTERNAL',
+        severity,
+        title: `Integration test vulnerability ${vulnId}`,
+        description: 'Automatically created for integration testing',
+        affectedComponents: [
+          {
+            identityType: 'PURL',
+            identity: purlIdentity,
+          }
+        ]
+      });
+
+      if (response.status === 200 || response.status === 201) {
+        return response.data.uuid;
+      }
+      throw new Error(`Unexpected status code: ${response.status}`);
+    } catch (error) {
+      // 409 means the vulnerability already exists — look it up and return its UUID
+      if (error.response?.status === 409) {
+        const lookup = await this.axiosInstance.get(`/api/v1/vulnerability/source/INTERNAL/vuln/${vulnId}`);
+        return lookup.data.uuid;
+      }
       throw { error, response: error.response };
     }
   }

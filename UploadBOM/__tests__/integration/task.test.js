@@ -20,6 +20,7 @@ describe('Task Integration Tests', () => {
     let testBom;
     let dTrackTestFixture;
     let testBomFilePath;
+    let vulnerableBomFilePath;
     let caFilePath;
     let caFile;
     
@@ -35,6 +36,7 @@ describe('Task Integration Tests', () => {
             // Load test BOM file
             testBomFilePath = path.join(__dirname, 'setup/test-bom.json');
             testBom = fs.readFileSync(testBomFilePath);
+            vulnerableBomFilePath = path.join(__dirname, 'setup/vulnerable-bom.json');
             
             // Setup mockTaskLib with proper inputs
             mockTaskLib.reset();
@@ -614,5 +616,41 @@ describe('Task Integration Tests', () => {
         // Ensure name and version haven't changed
         expect(finalProjectInfo.name).toBe(projectName);
         expect(finalProjectInfo.version).toBe(projectVersion);
+    });
+
+    it('should fail when critical vulnerability threshold is breached by a vulnerable component', async () => {
+        // Create an internal vulnerability matched by PURL to log4j-core (any version).
+        // This ensures reliable detection without depending on NVD sync timing.
+        await dTrackTestFixture.createInternalVulnerability(
+            'INT-TEST-LOG4J',
+            'CRITICAL',
+            'pkg:maven/org.apache.logging.log4j/log4j-core'
+        );
+
+        const projectName = generateUniqueName('task-test-threshold-breach');
+        const projectVersion = '1.0.0';
+
+        const projectId = await dTrackTestFixture.createProject(projectName, projectVersion);
+        expect(projectId).toBeTruthy();
+
+        // Upload vulnerable BOM with thresholdCritical=0 (fail if ANY critical vuln detected).
+        // The internal analyzer will match log4j-core 2.14.1 against INT-TEST-LOG4J during BOM processing.
+        mockTaskLib.setInput('dtrackURI', BASE_URL);
+        mockTaskLib.setInput('dtrackAPIKey', getTestApiKey('BOM-Upload-Viewer'));
+        mockTaskLib.setInput('dtrackProjId', projectId);
+        mockTaskLib.setInput('thresholdAction', 'error');
+        mockTaskLib.setInput('thresholdCritical', '0');
+        mockTaskLib.setPathInput('bomFilePath', vulnerableBomFilePath, true, true);
+        mockTaskLib.setStats(vulnerableBomFilePath, { isFile: () => true });
+        mockTaskLib.setPathInput('caFilePath', caFilePath, true, true);
+        mockTaskLib.setStats(caFilePath, { isFile: () => true });
+
+        // The task should throw because critical vulnerabilities exceed the threshold of 0
+        await expect(run()).rejects.toThrow();
+
+        // Verify DTrack actually detected critical vulnerabilities for this project
+        const client = new DTrackClient(BASE_URL, apiKey, caFile);
+        const metrics = await client.getProjectMetricsAsync(projectId);
+        expect(metrics.critical).toBeGreaterThan(0);
     });
 });
