@@ -67,8 +67,6 @@ const run = async () => {
 
   console.log(localize('BOMUploadSucceed', token));
 
-  await dtrackManager.updateProject(projectId, params.projectDescription, params.projectClassifier, params.projectSwidTagId, params.projectGroup, params.projectTags, params.isLatest);
-
   const thresholdExpert = new ThresholdExpert(
     Number.parseInt(params.thresholdCritical),
     Number.parseInt(params.thresholdHigh),
@@ -80,10 +78,21 @@ const run = async () => {
     Number.parseInt(params.thresholdpolicyViolationsInfo),
     Number.parseInt(params.thresholdpolicyViolationsTotal));
 
-  if ((params.thresholdAction === 'warn' || params.thresholdAction === 'error') && thresholdExpert.areThresholdsValidated()) {
+  const hasThresholdAction = (params.thresholdAction === 'warn' || params.thresholdAction === 'error') && thresholdExpert.areThresholdsValidated();
+  const hasProjectUpdate = !!(params.projectDescription || params.projectClassifier || params.projectSwidTagId || params.projectGroup ||
+                            (params.projectTags && params.projectTags.length > 0) || typeof params.isLatest === 'boolean');
 
+  // Wait for BOM processing before updating project properties: DTrack v5 resets certain fields
+  // (e.g. swidTagId) from BOM metadata during async processing, which would overwrite a PATCH
+  // applied before processing completes.
+  if (hasThresholdAction || hasProjectUpdate) {
     console.log(localize('ProcessingBOM'));
     await dtrackManager.waitBomProcessing(token);
+  }
+
+  await dtrackManager.updateProject(projectId, params.projectDescription, params.projectClassifier, params.projectSwidTagId, params.projectGroup, params.projectTags, params.isLatest);
+
+  if (hasThresholdAction) {
 
     console.log(localize('RetrievingMetrics'));
     await dtrackManager.waitMetricsRefresh(projectId);

@@ -9,10 +9,17 @@ MAX_HEALTH_CHECK_RETRIES=30
 HEALTH_CHECK_INTERVAL=2 # seconds
 CURL_OPTS="-k" # Skip SSL verification for self-signed certificates
 
+# Resolve DependencyTrack major version and select the matching compose file
+DTRACK_MAJOR_VERSION="${DTRACK_MAJOR_VERSION:-5}"
+
 # Define script directory and data storage location
 SETUP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 DATA_DIR="${SETUP_DIR}/dtrack-data"
-DOCKER_COMPOSE_PATH="${SETUP_DIR}/docker-compose.test.yml"
+if [[ "$DTRACK_MAJOR_VERSION" == "4" ]]; then
+  DOCKER_COMPOSE_PATH="${SETUP_DIR}/docker-compose.test.yml"
+else
+  DOCKER_COMPOSE_PATH="${SETUP_DIR}/docker-compose.test.v5.yml"
+fi
 API_KEYS_DIR="${SETUP_DIR}/api-keys"
 ADMIN_API_KEY_FILE="${API_KEYS_DIR}/admin.key"
 
@@ -250,13 +257,15 @@ setup_least_privilege_api_keys() {
 
 # Start Dependency Track environment
 start_dependency_track() {
-  echo "Starting Dependency Track test environment..."
+  echo "Starting Dependency Track test environment (version: ${DTRACK_MAJOR_VERSION})..."
 
   # Create data directory if it doesn't exist
   mkdir -p "${DATA_DIR}"
 
-  # Generate NIST dummy data
-  generate_nist_dummy_data "$DATA_DIR"
+  # v4 only: generate dummy NIST files to skip NVD feed download on startup
+  if [[ "$DTRACK_MAJOR_VERSION" == "4" ]]; then
+    generate_nist_dummy_data "$DATA_DIR"
+  fi
 
   # Start the containers
   echo "Starting Docker containers..."

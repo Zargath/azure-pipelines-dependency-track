@@ -1,0 +1,31 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.4",
+  "serialNumber": "urn:uuid:4e671687-395b-41f5-a30f-a58921a69b80",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2023-01-01T12:00:00Z",
+    "tools": [
+      {
+        "vendor": "Test",
+        "name": "Test Tool",
+        "version": "1.0.0"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "name": "Vulnerable Test App",
+      "version": "1.0.0"
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "log4j-core",
+      "group": "org.apache.logging.log4j",
+      "version": "2.14.1",
+      "purl": "pkg:maven/org.apache.logging.log4j/log4j-core@2.14.1",
+      "cpe": "cpe:2.3:a:apache:log4j:2.14.1:*:*:*:*:*:*:*"
+    }
+  ]
+}
