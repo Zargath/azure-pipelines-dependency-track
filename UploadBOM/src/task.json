@@ -30,6 +30,11 @@
       "name": "sslSettings",
       "displayName": "SSL Options",
       "isExpanded": false
+    },
+    {
+      "name": "cloneOptions",
+      "displayName": "Clone Options",
+      "isExpanded": false
     }
   ],
   "inputs": [
@@ -142,6 +147,87 @@
       "required": false,
       "groupName": "baseSettings",
       "helpMarkDown": "Sets the project as the latest version. Defaults to FALSE."
+    },
+    {
+      "name": "dtrackCloneTags",
+      "label": "Clone Tags",
+      "type": "boolean",
+      "defaultValue": "true",
+      "required": false,
+      "groupName": "cloneOptions",
+      "helpMarkDown": "When Auto Create Project is set to TRUE and no project with the specified name and version exists yet, but a previous version of the project does, this controls whether tags are carried over from the previous version to the new one when it is cloned."
+    },
+    {
+      "name": "dtrackCloneProperties",
+      "label": "Clone Properties",
+      "type": "boolean",
+      "defaultValue": "true",
+      "required": false,
+      "groupName": "cloneOptions",
+      "helpMarkDown": "When Auto Create Project is set to TRUE and no project with the specified name and version exists yet, but a previous version of the project does, this controls whether project properties are carried over from the previous version to the new one when it is cloned."
+    },
+    {
+      "name": "dtrackCloneServices",
+      "label": "Clone Services",
+      "type": "boolean",
+      "defaultValue": "true",
+      "required": false,
+      "groupName": "cloneOptions",
+      "helpMarkDown": "When Auto Create Project is set to TRUE and no project with the specified name and version exists yet, but a previous version of the project does, this controls whether services are carried over from the previous version to the new one when it is cloned."
+    },
+    {
+      "name": "dtrackCloneACL",
+      "label": "Clone ACL",
+      "type": "boolean",
+      "defaultValue": "true",
+      "required": false,
+      "groupName": "cloneOptions",
+      "helpMarkDown": "When Auto Create Project is set to TRUE and no project with the specified name and version exists yet, but a previous version of the project does, this controls whether the portfolio access control list is carried over from the previous version to the new one when it is cloned."
+    },
+    {
+      "name": "dtrackCloneComponents",
+      "label": "Clone Components",
+      "type": "boolean",
+      "defaultValue": "true",
+      "required": false,
+      "groupName": "cloneOptions",
+      "helpMarkDown": "When Auto Create Project is set to TRUE and no project with the specified name and version exists yet, but a previous version of the project does, this controls whether components are carried over from the previous version to the new one when it is cloned."
+    },
+    {
+      "name": "dtrackCloneFindings",
+      "label": "Clone Findings",
+      "type": "boolean",
+      "defaultValue": "true",
+      "required": false,
+      "groupName": "cloneOptions",
+      "helpMarkDown": "When Auto Create Project is set to TRUE and no project with the specified name and version exists yet, but a previous version of the project does, this controls whether findings are carried over from the previous version to the new one when it is cloned. Has no effect unless Clone Components is also enabled."
+    },
+    {
+      "name": "dtrackCloneAuditHistory",
+      "label": "Clone Findings Audit History",
+      "type": "boolean",
+      "defaultValue": "true",
+      "required": false,
+      "groupName": "cloneOptions",
+      "helpMarkDown": "When Auto Create Project is set to TRUE and no project with the specified name and version exists yet, but a previous version of the project does, this controls whether findings audit history (e.g. analysis decisions such as 'not affected' or 'false positive') is carried over from the previous version to the new one when it is cloned. Has no effect unless Clone Findings is also enabled."
+    },
+    {
+      "name": "dtrackClonePolicyViolations",
+      "label": "Clone Policy Violations",
+      "type": "boolean",
+      "defaultValue": "true",
+      "required": false,
+      "groupName": "cloneOptions",
+      "helpMarkDown": "When Auto Create Project is set to TRUE and no project with the specified name and version exists yet, but a previous version of the project does, this controls whether policy violations are carried over from the previous version to the new one when it is cloned. Has no effect unless Clone Components is also enabled."
+    },
+    {
+      "name": "dtrackClonePolicyViolationsAuditHistory",
+      "label": "Clone Policy Violations Audit History",
+      "type": "boolean",
+      "defaultValue": "true",
+      "required": false,
+      "groupName": "cloneOptions",
+      "helpMarkDown": "When Auto Create Project is set to TRUE and no project with the specified name and version exists yet, but a previous version of the project does, this controls whether policy violation audit history is carried over from the previous version to the new one when it is cloned. Has no effect unless Clone Policy Violations is also enabled."
     },
     {
       "name": "bomFilePath",
@@ -311,6 +397,10 @@
     "GetProjectUuidStarting": "Getting project id using name '%s' and version '%s'.",
     "MissingProjectInfoWhenAutoCreate": "Project name and version is required when auto creating project.",
     "MissingProjectInfoWhenNoProjectId": "Project name and version is required when Project Id is not set.",
+    "GetVersionFailed": "Failed to determine Dependency Track version: %s",
+    "CloningProject": "Project '%s' version '%s' will be cloned to version '%s' to carry over its settings and audit history.",
+    "CloneSucceed": "Cloning succeeded. New project id: '%s'.",
+    "CloneFailed": "Cloning the previous project version failed: %s",
     "ProjectUpdateFailed": "Failed to update project: %s",
     "UpdatingProject": "Updating project.",
     "NoProjectChanges": "Project settings don't need to be updated.",

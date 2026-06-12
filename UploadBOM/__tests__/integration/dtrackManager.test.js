@@ -53,7 +53,7 @@ describe('DTrackManager Integration Tests - Parent and Child Projects', () => {
         expect(token).toBeTruthy();
 
         // Wait for BOM processing to complete
-        await dtrackManager.waitBomProcessing(token);
+        await dtrackManager.waitEventProcessing(token);
 
         // Get project UUID and verify it exists
         const projectId = await dtrackManager.getProjetUUID(
@@ -92,7 +92,7 @@ describe('DTrackManager Integration Tests - Parent and Child Projects', () => {
         expect(token).toBeTruthy();
 
         // Wait for BOM processing to complete
-        await dtrackManager.waitBomProcessing(token);
+        await dtrackManager.waitEventProcessing(token);
 
         // Get child project UUID and verify it exists
         const childProjectId = await dtrackManager.getProjetUUID(
@@ -138,7 +138,7 @@ describe('DTrackManager Integration Tests - Parent and Child Projects', () => {
         expect(token).toBeTruthy();
 
         // Wait for BOM processing to complete
-        await dtrackManager.waitBomProcessing(token);
+        await dtrackManager.waitEventProcessing(token);
 
         // Get child project UUID and verify it exists
         const childProjectId = await dtrackManager.getProjetUUID(

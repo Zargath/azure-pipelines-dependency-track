@@ -618,6 +618,301 @@ describe('Task Integration Tests', () => {
         expect(finalProjectInfo.version).toBe(projectVersion);
     });
 
+    it('should clone the previous latest project version and carry over its data when clone options are enabled (default)', async () => {
+        // Arrange
+        const projectName = generateUniqueName('task-test-clone-enabled');
+        const previousVersion = '1.0.0';
+        const newVersion = '2.0.0';
+        const clonedTags = ['clone-test-tag-a', 'clone-test-tag-b'];
+
+        // Create the previous "latest" project version and give it some tags to carry over
+        const previousProjectId = await dTrackTestFixture.createProject(projectName, previousVersion);
+        expect(previousProjectId).toBeTruthy();
+
+        const client = new DTrackClient(BASE_URL, apiKey, caFile);
+        await client.updateProject(previousProjectId, undefined, undefined, undefined, undefined, clonedTags.map(tag => ({ name: tag })), true);
+
+        const previousProjectInfo = await client.getProjectInfo(previousProjectId);
+        expect(previousProjectInfo.isLatest).toBe(true);
+        expect(previousProjectInfo.tags).toHaveLength(clonedTags.length);
+
+        // Setup the task input parameters to auto-create the new version with cloning enabled
+        // Cloning requires PORTFOLIO_MANAGEMENT permission, so use the Portfolio-Manager key
+        mockTaskLib.setInput('dtrackURI', BASE_URL);
+        mockTaskLib.setInput('dtrackAPIKey', getTestApiKey('Portfolio-Manager'));
+        mockTaskLib.setInput('dtrackProjName', projectName);
+        mockTaskLib.setInput('dtrackProjVersion', newVersion);
+        mockTaskLib.setBoolInput('dtrackProjAutoCreate', true);
+        mockTaskLib.setBoolInput('dtrackIsLatest', true);
+        mockTaskLib.setBoolInput('dtrackCloneTags', true);
+        mockTaskLib.setBoolInput('dtrackCloneProperties', true);
+        mockTaskLib.setBoolInput('dtrackCloneServices', true);
+        mockTaskLib.setBoolInput('dtrackCloneACL', true);
+        mockTaskLib.setBoolInput('dtrackCloneComponents', true);
+        mockTaskLib.setBoolInput('dtrackCloneFindings', true);
+        mockTaskLib.setBoolInput('dtrackCloneAuditHistory', true);
+        mockTaskLib.setBoolInput('dtrackClonePolicyViolations', true);
+        mockTaskLib.setBoolInput('dtrackClonePolicyViolationsAuditHistory', true);
+        mockTaskLib.setPathInput('bomFilePath', testBomFilePath, true, true);
+        mockTaskLib.setStats(testBomFilePath, { isFile: () => true });
+        mockTaskLib.setPathInput('caFilePath', caFilePath, true, true);
+        mockTaskLib.setStats(caFilePath, { isFile: () => true });
+
+        // Run the task module and capture the token
+        const taskResult = await run();
+        expect(taskResult.token).toBeTruthy();
+        expect(taskResult.projectId).not.toBe(previousProjectId);
+
+        // Wait for BOM processing to complete
+        await waitForBomProcessing(client, taskResult.token);
+
+        // Check that the new project version was created via cloning
+        const newProjectId = await client.getProjectUUID(projectName, newVersion);
+        expect(newProjectId).toBeTruthy();
+        expect(newProjectId).toBe(taskResult.projectId);
+
+        const newProjectInfo = await client.getProjectInfo(newProjectId);
+        expect(newProjectInfo.name).toBe(projectName);
+        expect(newProjectInfo.version).toBe(newVersion);
+        expect(newProjectInfo.isLatest).toBe(true);
+        expect(newProjectInfo.lastBomImport).toBeTruthy();
+
+        // Tags should have been carried over from the previous version
+        expect(newProjectInfo.tags).toHaveLength(clonedTags.length);
+        const newTags = newProjectInfo.tags.map(tag => tag.name);
+        clonedTags.forEach(tag => {
+            expect(newTags).toContain(tag);
+        });
+    });
+
+    it('should not carry over data from the previous project version when clone options are disabled', async () => {
+        // Arrange
+        const projectName = generateUniqueName('task-test-clone-disabled');
+        const previousVersion = '1.0.0';
+        const newVersion = '2.0.0';
+        const clonedTags = ['clone-test-tag-c', 'clone-test-tag-d'];
+
+        // Create the previous "latest" project version and give it some tags that should not be carried over
+        const previousProjectId = await dTrackTestFixture.createProject(projectName, previousVersion);
+        expect(previousProjectId).toBeTruthy();
+
+        const client = new DTrackClient(BASE_URL, apiKey, caFile);
+        await client.updateProject(previousProjectId, undefined, undefined, undefined, undefined, clonedTags.map(tag => ({ name: tag })), true);
+
+        const previousProjectInfo = await client.getProjectInfo(previousProjectId);
+        expect(previousProjectInfo.isLatest).toBe(true);
+        expect(previousProjectInfo.tags).toHaveLength(clonedTags.length);
+
+        // Setup the task input parameters to auto-create the new version with cloning disabled
+        // Cloning requires PORTFOLIO_MANAGEMENT permission, so use the Portfolio-Manager key
+        mockTaskLib.setInput('dtrackURI', BASE_URL);
+        mockTaskLib.setInput('dtrackAPIKey', getTestApiKey('Portfolio-Manager'));
+        mockTaskLib.setInput('dtrackProjName', projectName);
+        mockTaskLib.setInput('dtrackProjVersion', newVersion);
+        mockTaskLib.setBoolInput('dtrackProjAutoCreate', true);
+        mockTaskLib.setBoolInput('dtrackIsLatest', true);
+        // Clone options intentionally left unset, which the mock task lib resolves to false
+        mockTaskLib.setPathInput('bomFilePath', testBomFilePath, true, true);
+        mockTaskLib.setStats(testBomFilePath, { isFile: () => true });
+        mockTaskLib.setPathInput('caFilePath', caFilePath, true, true);
+        mockTaskLib.setStats(caFilePath, { isFile: () => true });
+
+        // Run the task module and capture the token
+        const taskResult = await run();
+        expect(taskResult.token).toBeTruthy();
+        expect(taskResult.projectId).not.toBe(previousProjectId);
+
+        // Wait for BOM processing to complete
+        await waitForBomProcessing(client, taskResult.token);
+
+        // Check that the new project version was still created via cloning
+        const newProjectId = await client.getProjectUUID(projectName, newVersion);
+        expect(newProjectId).toBeTruthy();
+        expect(newProjectId).toBe(taskResult.projectId);
+
+        const newProjectInfo = await client.getProjectInfo(newProjectId);
+        expect(newProjectInfo.name).toBe(projectName);
+        expect(newProjectInfo.version).toBe(newVersion);
+        expect(newProjectInfo.lastBomImport).toBeTruthy();
+
+        // Tags should NOT have been carried over from the previous version
+        const newTags = newProjectInfo.tags ? newProjectInfo.tags.map(tag => tag.name) : [];
+        clonedTags.forEach(tag => {
+            expect(newTags).not.toContain(tag);
+        });
+    });
+
+    it('should upload BOM to the existing project without cloning when auto-creating and the exact version already exists', async () => {
+        // Arrange
+        const projectName = generateUniqueName('task-test-autocreate-existing-version');
+        const projectVersion = '1.0.0';
+
+        // Create the project with the exact name+version that will be "auto-created" again
+        const existingProjectId = await dTrackTestFixture.createProject(projectName, projectVersion);
+        expect(existingProjectId).toBeTruthy();
+
+        const client = new DTrackClient(BASE_URL, apiKey, caFile);
+
+        // Setup the task input parameters to auto-create the same project+version again.
+        // Project-Creator lacks PORTFOLIO_MANAGEMENT, so this would fail if cloning were
+        // (incorrectly) attempted for an already-existing exact version.
+        mockTaskLib.setInput('dtrackURI', BASE_URL);
+        mockTaskLib.setInput('dtrackAPIKey', getTestApiKey('Project-Creator'));
+        mockTaskLib.setInput('dtrackProjName', projectName);
+        mockTaskLib.setInput('dtrackProjVersion', projectVersion);
+        mockTaskLib.setBoolInput('dtrackProjAutoCreate', true);
+        mockTaskLib.setPathInput('bomFilePath', testBomFilePath, true, true);
+        mockTaskLib.setStats(testBomFilePath, { isFile: () => true });
+        mockTaskLib.setPathInput('caFilePath', caFilePath, true, true);
+        mockTaskLib.setStats(caFilePath, { isFile: () => true });
+
+        // Run the task module and capture the token
+        const taskResult = await run();
+        expect(taskResult.token).toBeTruthy();
+
+        // The existing project should be reused rather than cloned
+        expect(taskResult.projectId).toBe(existingProjectId);
+
+        // Wait for BOM processing to complete
+        await waitForBomProcessing(client, taskResult.token);
+
+        // Check that the BOM was uploaded to the existing project
+        const projectInfo = await client.getProjectInfo(existingProjectId);
+        expect(projectInfo.lastBomImport).toBeTruthy();
+    });
+
+    it('should retain the parent relationship when cloning a child project during auto-create', async () => {
+        // Arrange
+        const parentProjectName = generateUniqueName('task-test-clone-child-parent');
+        const parentProjectVersion = '1.0.0';
+        const childProjectName = generateUniqueName('task-test-clone-child');
+        const previousChildVersion = '1.0.0';
+        const newChildVersion = '2.0.0';
+        const clonedTags = ['clone-test-tag-e', 'clone-test-tag-f'];
+
+        // Create the parent project
+        const parentProjectId = await dTrackTestFixture.createProject(parentProjectName, parentProjectVersion);
+        expect(parentProjectId).toBeTruthy();
+
+        // Create the previous "latest" child project version, linked to the parent
+        const client = new DTrackClient(BASE_URL, apiKey, caFile);
+        const childUploadToken = await client.uploadBomAndCreateChildProjectAsync(childProjectName, previousChildVersion, parentProjectId, true, testBom);
+        await waitForBomProcessing(client, childUploadToken);
+
+        const previousChildProjectId = await client.getProjectUUID(childProjectName, previousChildVersion);
+        expect(previousChildProjectId).toBeTruthy();
+
+        await client.updateProject(previousChildProjectId, undefined, undefined, undefined, undefined, clonedTags.map(tag => ({ name: tag })), true);
+
+        const previousChildInfo = await client.getProjectInfo(previousChildProjectId);
+        expect(previousChildInfo.isLatest).toBe(true);
+        expect(previousChildInfo.tags).toHaveLength(clonedTags.length);
+
+        // Setup the task input parameters to auto-create the new child version with cloning enabled
+        mockTaskLib.setInput('dtrackURI', BASE_URL);
+        mockTaskLib.setInput('dtrackAPIKey', getTestApiKey('Portfolio-Manager'));
+        mockTaskLib.setInput('dtrackProjName', childProjectName);
+        mockTaskLib.setInput('dtrackProjVersion', newChildVersion);
+        mockTaskLib.setInput('dtrackParentProjName', parentProjectName);
+        mockTaskLib.setInput('dtrackParentProjVersion', parentProjectVersion);
+        mockTaskLib.setBoolInput('dtrackProjAutoCreate', true);
+        mockTaskLib.setBoolInput('dtrackIsLatest', true);
+        mockTaskLib.setBoolInput('dtrackCloneTags', true);
+        mockTaskLib.setBoolInput('dtrackCloneProperties', true);
+        mockTaskLib.setBoolInput('dtrackCloneServices', true);
+        mockTaskLib.setBoolInput('dtrackCloneACL', true);
+        mockTaskLib.setBoolInput('dtrackCloneComponents', true);
+        mockTaskLib.setBoolInput('dtrackCloneFindings', true);
+        mockTaskLib.setBoolInput('dtrackCloneAuditHistory', true);
+        mockTaskLib.setBoolInput('dtrackClonePolicyViolations', true);
+        mockTaskLib.setBoolInput('dtrackClonePolicyViolationsAuditHistory', true);
+        mockTaskLib.setPathInput('bomFilePath', testBomFilePath, true, true);
+        mockTaskLib.setStats(testBomFilePath, { isFile: () => true });
+        mockTaskLib.setPathInput('caFilePath', caFilePath, true, true);
+        mockTaskLib.setStats(caFilePath, { isFile: () => true });
+
+        // Run the task module and capture the token
+        const taskResult = await run();
+        expect(taskResult.token).toBeTruthy();
+        expect(taskResult.projectId).not.toBe(previousChildProjectId);
+
+        // Wait for BOM processing to complete
+        await waitForBomProcessing(client, taskResult.token);
+
+        // Check that the new child project version was created via cloning
+        const newChildProjectId = await client.getProjectUUID(childProjectName, newChildVersion);
+        expect(newChildProjectId).toBeTruthy();
+        expect(newChildProjectId).toBe(taskResult.projectId);
+
+        const newChildInfo = await client.getProjectInfo(newChildProjectId);
+        expect(newChildInfo.tags).toHaveLength(clonedTags.length);
+
+        // The cloned project should retain its parent relationship
+        const childrenResponse = await dTrackTestFixture.getProjectChildren(parentProjectId);
+        const childrenIds = childrenResponse.map(project => project.uuid);
+        expect(childrenIds).toContain(newChildProjectId);
+    });
+
+    it('should clone the previous latest project version without making the new version latest when dtrackIsLatest is false', async () => {
+        // Arrange
+        const projectName = generateUniqueName('task-test-clone-not-latest');
+        const previousVersion = '1.0.0';
+        const newVersion = '2.0.0';
+        const clonedTags = ['clone-test-tag-g', 'clone-test-tag-h'];
+
+        // Create the previous "latest" project version and give it some tags to carry over
+        const previousProjectId = await dTrackTestFixture.createProject(projectName, previousVersion);
+        expect(previousProjectId).toBeTruthy();
+
+        const client = new DTrackClient(BASE_URL, apiKey, caFile);
+        await client.updateProject(previousProjectId, undefined, undefined, undefined, undefined, clonedTags.map(tag => ({ name: tag })), true);
+
+        const previousProjectInfo = await client.getProjectInfo(previousProjectId);
+        expect(previousProjectInfo.isLatest).toBe(true);
+
+        // Setup the task input parameters to auto-create the new version with cloning enabled but isLatest=false
+        mockTaskLib.setInput('dtrackURI', BASE_URL);
+        mockTaskLib.setInput('dtrackAPIKey', getTestApiKey('Portfolio-Manager'));
+        mockTaskLib.setInput('dtrackProjName', projectName);
+        mockTaskLib.setInput('dtrackProjVersion', newVersion);
+        mockTaskLib.setBoolInput('dtrackProjAutoCreate', true);
+        mockTaskLib.setBoolInput('dtrackIsLatest', false);
+        mockTaskLib.setBoolInput('dtrackCloneTags', true);
+        mockTaskLib.setBoolInput('dtrackCloneProperties', true);
+        mockTaskLib.setBoolInput('dtrackCloneServices', true);
+        mockTaskLib.setBoolInput('dtrackCloneACL', true);
+        mockTaskLib.setBoolInput('dtrackCloneComponents', true);
+        mockTaskLib.setBoolInput('dtrackCloneFindings', true);
+        mockTaskLib.setBoolInput('dtrackCloneAuditHistory', true);
+        mockTaskLib.setBoolInput('dtrackClonePolicyViolations', true);
+        mockTaskLib.setBoolInput('dtrackClonePolicyViolationsAuditHistory', true);
+        mockTaskLib.setPathInput('bomFilePath', testBomFilePath, true, true);
+        mockTaskLib.setStats(testBomFilePath, { isFile: () => true });
+        mockTaskLib.setPathInput('caFilePath', caFilePath, true, true);
+        mockTaskLib.setStats(caFilePath, { isFile: () => true });
+
+        // Run the task module and capture the token
+        const taskResult = await run();
+        expect(taskResult.token).toBeTruthy();
+        expect(taskResult.projectId).not.toBe(previousProjectId);
+
+        // Wait for BOM processing to complete
+        await waitForBomProcessing(client, taskResult.token);
+
+        // Check that the new project version was created via cloning
+        const newProjectId = await client.getProjectUUID(projectName, newVersion);
+        expect(newProjectId).toBeTruthy();
+        expect(newProjectId).toBe(taskResult.projectId);
+
+        const newProjectInfo = await client.getProjectInfo(newProjectId);
+        expect(newProjectInfo.isLatest).toBe(false);
+        expect(newProjectInfo.tags).toHaveLength(clonedTags.length);
+
+        // The previous version should remain the latest
+        const refreshedPreviousInfo = await client.getProjectInfo(previousProjectId);
+        expect(refreshedPreviousInfo.isLatest).toBe(true);
+    });
+
     it('should fail when critical vulnerability threshold is breached by a vulnerable component', async () => {
         // Create an internal vulnerability matched by PURL to log4j-core (any version).
         // This ensures reliable detection without depending on NVD sync timing.

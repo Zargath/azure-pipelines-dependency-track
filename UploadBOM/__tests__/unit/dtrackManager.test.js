@@ -29,7 +29,12 @@ describe('DtrackManager', () => {
       uploadBomAndCreateChildProjectAsync: jest.fn(),
       pullProcessingStatusAsync: jest.fn(),
       getLastMetricCalculationDate: jest.fn(),
-      getProjectMetricsAsync: jest.fn()
+      getProjectMetricsAsync: jest.fn(),
+      getProjectByNameAndVersion: jest.fn(),
+      getLatestProjectVersion: jest.fn(),
+      getVersion: jest.fn(),
+      cloneProjectV1Async: jest.fn(),
+      cloneProjectV2Async: jest.fn()
     };
 
     dtrackManager = new DtrackManager(mockDtrackClient);
@@ -161,6 +166,116 @@ describe('DtrackManager', () => {
       await expect(dtrackManager.updateProject(projectId, "New description", null, null, null, [], null))
         .rejects
         .toThrow('ProjectUpdateFailed: Update failed');
+    });
+  });
+
+  describe('tryGetProjectUUID', () => {
+    it('should return the project uuid when found', async () => {
+      const expectedUUID = '123e4567-e89b-12d3-a456-426614174000';
+      mockDtrackClient.getProjectByNameAndVersion.mockResolvedValue({ uuid: expectedUUID });
+
+      const result = await dtrackManager.tryGetProjectUUID('test-project', '1.0.0');
+
+      expect(result).toBe(expectedUUID);
+      expect(mockDtrackClient.getProjectByNameAndVersion).toHaveBeenCalledWith('test-project', '1.0.0');
+    });
+
+    it('should return null when the project is not found', async () => {
+      mockDtrackClient.getProjectByNameAndVersion.mockResolvedValue(null);
+
+      const result = await dtrackManager.tryGetProjectUUID('test-project', '1.0.0');
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('getDtrackMajorVersion', () => {
+    it('should return the major version as a number', async () => {
+      mockDtrackClient.getVersion.mockResolvedValue('4.12.3');
+
+      const result = await dtrackManager.getDtrackMajorVersion();
+
+      expect(result).toBe(4);
+    });
+
+    it('should throw an error when the version cannot be retrieved', async () => {
+      mockDtrackClient.getVersion.mockRejectedValue(new Error('Request failed'));
+
+      await expect(dtrackManager.getDtrackMajorVersion())
+        .rejects
+        .toThrow('GetVersionFailed: Request failed');
+    });
+  });
+
+  describe('cloneLatestProjectVersion', () => {
+    const cloneOptions = {
+      tags: true,
+      properties: true,
+      services: true,
+      acl: true,
+      components: true,
+      findings: true,
+      auditHistory: true,
+      policyViolations: true,
+      policyViolationsAuditHistory: true
+    };
+
+    it('should return null when there is no previous version to clone', async () => {
+      mockDtrackClient.getLatestProjectVersion.mockResolvedValue(null);
+
+      const result = await dtrackManager.cloneLatestProjectVersion('test-project', '2.0.0', false, cloneOptions);
+
+      expect(result).toBeNull();
+      expect(mockDtrackClient.getVersion).not.toHaveBeenCalled();
+    });
+
+    it('should return null when the latest version already matches the requested version', async () => {
+      mockDtrackClient.getLatestProjectVersion.mockResolvedValue({ uuid: 'existing-uuid', name: 'test-project', version: '2.0.0' });
+
+      const result = await dtrackManager.cloneLatestProjectVersion('test-project', '2.0.0', false, cloneOptions);
+
+      expect(result).toBeNull();
+      expect(mockDtrackClient.getVersion).not.toHaveBeenCalled();
+    });
+
+    it('should clone using the v2 API when Dependency Track is v5 or newer', async () => {
+      const latestUuid = '123e4567-e89b-12d3-a456-426614174000';
+      const newUuid = '223e4567-e89b-12d3-a456-426614174001';
+      mockDtrackClient.getLatestProjectVersion.mockResolvedValue({ uuid: latestUuid, name: 'test-project', version: '1.0.0' });
+      mockDtrackClient.getVersion.mockResolvedValue('5.1.0');
+      mockDtrackClient.cloneProjectV2Async.mockResolvedValue(newUuid);
+
+      const result = await dtrackManager.cloneLatestProjectVersion('test-project', '2.0.0', true, cloneOptions);
+
+      expect(result).toBe(newUuid);
+      expect(mockDtrackClient.cloneProjectV2Async).toHaveBeenCalledWith(latestUuid, '2.0.0', true, cloneOptions);
+      expect(mockDtrackClient.cloneProjectV1Async).not.toHaveBeenCalled();
+    });
+
+    it('should clone using the v1 API and poll for completion when Dependency Track is v4', async () => {
+      const latestUuid = '123e4567-e89b-12d3-a456-426614174000';
+      const newUuid = '223e4567-e89b-12d3-a456-426614174001';
+      const token = 'token-123';
+      mockDtrackClient.getLatestProjectVersion.mockResolvedValue({ uuid: latestUuid, name: 'test-project', version: '1.0.0' });
+      mockDtrackClient.getVersion.mockResolvedValue('4.12.3');
+      mockDtrackClient.cloneProjectV1Async.mockResolvedValue(token);
+      mockDtrackClient.pullProcessingStatusAsync.mockResolvedValue(false);
+      mockDtrackClient.getProjectByNameAndVersion.mockResolvedValue({ uuid: newUuid, name: 'test-project', version: '2.0.0' });
+
+      const result = await dtrackManager.cloneLatestProjectVersion('test-project', '2.0.0', true, cloneOptions);
+
+      expect(result).toBe(newUuid);
+      expect(mockDtrackClient.cloneProjectV1Async).toHaveBeenCalledWith(latestUuid, '2.0.0', true, cloneOptions);
+      expect(mockDtrackClient.pullProcessingStatusAsync).toHaveBeenCalledWith(token);
+      expect(mockDtrackClient.cloneProjectV2Async).not.toHaveBeenCalled();
+    });
+
+    it('should throw an error when cloning fails', async () => {
+      mockDtrackClient.getLatestProjectVersion.mockRejectedValue(new Error('Request failed'));
+
+      await expect(dtrackManager.cloneLatestProjectVersion('test-project', '2.0.0', true, cloneOptions))
+        .rejects
+        .toThrow('CloneFailed: Request failed');
     });
   });
 

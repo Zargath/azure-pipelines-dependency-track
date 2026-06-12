@@ -94,6 +94,26 @@ Provide **one** of the following:
 | `dtrackParentProjVersion` | Parent project version (with optional auto-create) |
 | `dtrackIsLatest` | Sets the project as the latest version. Defaults to false. |
 
+### Clone Options (Auto-Create)
+
+When `dtrackProjAutoCreate` is `true` and no project with the given name and version exists yet, but a previous "latest" version of the project does, that previous version is automatically cloned into the new version before the BOM is uploaded. This carries over audit decisions (e.g. "not affected" / "false positive") and other settings instead of starting from a blank project.
+
+These inputs control what gets carried over during that clone. All default to `true`:
+
+| Name | Description |
+|------|-------------|
+| `dtrackCloneTags` | Carry over project tags |
+| `dtrackCloneProperties` | Carry over project properties |
+| `dtrackCloneServices` | Carry over services |
+| `dtrackCloneACL` | Carry over the portfolio access control list |
+| `dtrackCloneComponents` | Carry over components |
+| `dtrackCloneFindings` | Carry over findings. Has no effect unless `dtrackCloneComponents` is also enabled |
+| `dtrackCloneAuditHistory` | Carry over findings audit history (analysis decisions such as "not affected" or "false positive"). Has no effect unless `dtrackCloneFindings` is also enabled |
+| `dtrackClonePolicyViolations` | Carry over policy violations. Has no effect unless `dtrackCloneComponents` is also enabled |
+| `dtrackClonePolicyViolationsAuditHistory` | Carry over policy violation audit history. Has no effect unless `dtrackClonePolicyViolations` is also enabled |
+
+See [🧬 Project Version Cloning](#-project-version-cloning) below for more details.
+
 ---
 
 ## 🗝️ Required Permissions
@@ -106,6 +126,7 @@ The following table outlines the minimum permissions required in Dependency-Trac
 | **Upload and create project** | `BOM_UPLOAD` + `PROJECT_CREATION_UPLOAD` |
 | **Use thresholds** | `VIEW_PORTFOLIO` |
 | **Update project properties** | `PORTFOLIO_MANAGEMENT` |
+| **Auto-create with cloning of a previous version** | `BOM_UPLOAD` + `PROJECT_CREATION_UPLOAD` + `PORTFOLIO_MANAGEMENT` |
 
 ### Recommended Setup
 
@@ -114,7 +135,7 @@ For most CI/CD scenarios:
 BOM_UPLOAD + PROJECT_CREATION_UPLOAD + VIEW_PORTFOLIO
 ```
 
-Add `PORTFOLIO_MANAGEMENT` if you need to set project descriptions, tags, or other properties.
+Add `PORTFOLIO_MANAGEMENT` if you need to set project descriptions, tags, or other properties, or if `dtrackProjAutoCreate` should be able to clone settings and audit history from a previous project version.
 
 ---
 
@@ -166,6 +187,27 @@ When any of the following inputs are set, the task will wait for Dependency-Trac
 This is required because Dependency-Track v5 synchronizes certain project fields from the BOM metadata during async processing, which would otherwise overwrite values set by the task. Waiting for processing to complete first ensures the values you configure are the ones that take effect.
 
 As a result, pipelines that set any of these properties will take longer to complete, proportional to the BOM processing time in your Dependency-Track instance.
+
+---
+
+## 🧬 Project Version Cloning
+
+When `dtrackProjAutoCreate` is `true`, the task will look for an existing project with the given name and version before doing anything else:
+
+1. If a project with that exact name **and** version already exists, the BOM is uploaded to it directly — no cloning happens.
+2. Otherwise, if a "latest" version of a project with that name exists (with a different version), it is cloned into the new version, carrying over tags, properties, components, findings, audit history, policy violations, services and ACL according to the [Clone Options](#clone-options-auto-create) inputs (all enabled by default). The BOM is then uploaded to the newly cloned project.
+3. If neither exists, a brand-new project is created (optionally as a child of `dtrackParentProjName`/`dtrackParentProjVersion`) and the BOM is uploaded to it.
+
+This means audit decisions (e.g. "not affected" / "false positive") and project metadata from the previous version automatically carry forward to each new version uploaded, without any manual project setup.
+
+### Dependency-Track v4 vs v5
+
+The task automatically detects which major version of Dependency-Track it is talking to (via `GET /api/version`) and uses the appropriate clone API:
+
+- **Dependency-Track v4**: uses the legacy `PUT /api/v1/project/clone` endpoint and waits for the clone operation to finish processing before continuing.
+- **Dependency-Track v5+**: uses the `POST /api/v2/projects/{uuid}/clone` endpoint, which completes synchronously.
+
+No extra configuration is required — the same task inputs work against either version.
 
 ---
 

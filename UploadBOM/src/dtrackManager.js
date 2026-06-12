@@ -22,6 +22,48 @@ class DtrackManager {
     return info;
   }
 
+  async tryGetProjectUUID(name, version) {
+    const project = await this.dtrackClient.getProjectByNameAndVersion(name, version);
+    return project ? project.uuid : null;
+  }
+
+  async getDtrackMajorVersion() {
+    try {
+      const version = await this.dtrackClient.getVersion();
+      return Number.parseInt(version.split('.')[0], 10);
+    }
+    catch (err) {
+      throw new Error(localize('GetVersionFailed', Utils.getErrorMessage(err)));
+    }
+  }
+
+  async cloneLatestProjectVersion(projectName, newVersion, isLatest, cloneOptions) {
+    try {
+      const latestProject = await this.dtrackClient.getLatestProjectVersion(projectName);
+      if (!latestProject || latestProject.version === newVersion) {
+        return null;
+      }
+
+      console.log(localize('CloningProject', latestProject.name, latestProject.version, newVersion));
+
+      const majorVersion = await this.getDtrackMajorVersion();
+      let newProjectId;
+      if (majorVersion >= 5) {
+        newProjectId = await this.dtrackClient.cloneProjectV2Async(latestProject.uuid, newVersion, isLatest, cloneOptions);
+      } else {
+        const token = await this.dtrackClient.cloneProjectV1Async(latestProject.uuid, newVersion, isLatest, cloneOptions);
+        await this.waitEventProcessing(token);
+        newProjectId = await this.tryGetProjectUUID(projectName, newVersion);
+      }
+
+      console.log(localize('CloneSucceed', newProjectId));
+      return newProjectId;
+    }
+    catch (err) {
+      throw new Error(localize('CloneFailed', Utils.getErrorMessage(err)));
+    }
+  }
+
   async updateProject(projectId, description, classifier, swidTagId, group, tags, isLatest) {
     try {
       // Check if any update parameters are actually set
@@ -135,7 +177,7 @@ class DtrackManager {
     }
   }
 
-  async waitBomProcessing(token) {
+  async waitEventProcessing(token) {
     let processing = true;
     while (processing) {
       await Utils.sleepAsync(2000);
