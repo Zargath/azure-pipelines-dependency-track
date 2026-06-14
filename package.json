@@ -4,7 +4,11 @@
   "description": "Azure DevOps extension for submitting BOM reports to Dependency-Track",
   "main": "version-bump.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "docker:start:v4": "DTRACK_MAJOR_VERSION=4 bash test-environment/dtrack-environment.sh start",
+    "docker:start": "DTRACK_MAJOR_VERSION=5 bash test-environment/dtrack-environment.sh start",
+    "docker:stop": "bash test-environment/dtrack-environment.sh stop",
+    "certs:generate": "bash test-environment/generate-certs.sh"
   },
   "repository": {
     "type": "git",
