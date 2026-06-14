@@ -1,4 +1,4 @@
-import { localize } from "./localization";
+import { localize } from "./localization.js";
 
 class ThresholdExpert {
   constructor(criticalCount, 

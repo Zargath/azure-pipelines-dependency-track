@@ -25,6 +25,13 @@ jobs:
         npm prune --production
       working-directory: UploadBOM
 
+    - name: Build AddProjectVersion
+      run: |
+        npm install
+        npm run build
+        npm prune --production
+      working-directory: AddProjectVersion
+
     - name: Package task
       run: |
         npm install

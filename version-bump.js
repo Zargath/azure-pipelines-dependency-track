@@ -133,14 +133,16 @@ const run = async args => {
     content.public = settings.public;
   })
 
-  const taskJsonPath = path.resolve(__dirname, 'UploadBOM/dist/task.json');
-  await updateJsonContent(taskJsonPath, content => {
-    content.version = {
-      Major: settings.version.major,
-      Minor: settings.version.minor,
-      Patch: settings.version.patch
-    };
-  });
+  const taskJsonPaths = ['UploadBOM/dist/task.json', 'AddProjectVersion/dist/task.json'];
+  for (const taskJsonPath of taskJsonPaths) {
+    await updateJsonContent(path.resolve(__dirname, taskJsonPath), content => {
+      content.version = {
+        Major: settings.version.major,
+        Minor: settings.version.minor,
+        Patch: settings.version.patch
+      };
+    });
+  }
 };
 
 const args = minimist(process.argv.slice(2), {

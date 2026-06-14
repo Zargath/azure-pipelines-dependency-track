@@ -37,6 +37,16 @@ jobs:
         name: Coverage-Report
         path: UploadBOM/coverage
 
+    - name: Build AddProjectVersion
+      run: |
+        npm install
+        npm run build
+      working-directory: AddProjectVersion
+
+    - name: Prune dev dependencies
+      run: npm prune --production
+      working-directory: AddProjectVersion
+
     - name: Package task
       if: ${{ ! startsWith(github.head_ref, 'dependabot/') }}
       run: |

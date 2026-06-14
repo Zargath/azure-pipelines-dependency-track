@@ -1,0 +1,196 @@
+{
+  "id": "0cde17d7-916e-4f8a-9fe9-8de6fa120d45",
+  "name": "add-dtrack-project-version",
+  "friendlyName": "Add Dependency-Track Project Version",
+  "description": "Add a new version to a Dependency-Track project, carrying over audit history and settings from the previous latest version, before uploading a BOM.",
+  "instanceNameFormat": "Add Dependency Track project version $(dtrackProjVersion) for $(dtrackProjName)",
+  "author": "Edouard Shaar",
+  "category": "Build",
+  "visibility": [
+    "Build"
+  ],
+  "version": {
+    "Major": 0,
+    "Minor": 0,
+    "Patch": 0
+  },
+  "minimumAgentVersion": "2.0.0",
+  "groups": [
+    {
+      "name": "baseSettings",
+      "displayName": "Base Settings",
+      "isExpanded": true
+    },
+    {
+      "name": "addVersionOptions",
+      "displayName": "Add Version Options",
+      "isExpanded": false
+    },
+    {
+      "name": "sslSettings",
+      "displayName": "SSL Options",
+      "isExpanded": false
+    }
+  ],
+  "inputs": [
+    {
+      "name": "dtrackProjName",
+      "label": "Project Name",
+      "type": "string",
+      "required": true,
+      "groupName": "baseSettings",
+      "helpMarkDown": "The name of the project in Dependency Track."
+    },
+    {
+      "name": "dtrackProjVersion",
+      "label": "Project Version",
+      "type": "string",
+      "required": true,
+      "groupName": "baseSettings",
+      "helpMarkDown": "The version of the project to add in Dependency Track. If a project with this name and version already exists, this task is a no-op."
+    },
+    {
+      "name": "dtrackIsLatest",
+      "label": "Is Latest Version",
+      "type": "boolean",
+      "required": false,
+      "groupName": "baseSettings",
+      "helpMarkDown": "Sets the new project version as the latest version. Defaults to FALSE."
+    },
+    {
+      "name": "serviceConnection",
+      "label": "Service Connection",
+      "type": "connectedService:Generic",
+      "required": false,
+      "groupName": "baseSettings",
+      "helpMarkDown": "The Dependency Track service connection. This is used to set the Dependency Track URI and API Key. If this is set, the Dependency Track URI and API Key inputs will be ignored."
+    },
+    {
+      "name": "dtrackAPIKey",
+      "label": "API Key",
+      "type": "string",
+      "required": false,
+      "groupName": "baseSettings",
+      "helpMarkDown": "The Dependency Track API key. This is used to authenticate to Dependency Track. Required if Service Connection is not specified."
+    },
+    {
+      "name": "dtrackURI",
+      "label": "Dependency Track URI",
+      "type": "string",
+      "required": false,
+      "groupName": "baseSettings",
+      "helpMarkDown": "The URL to the Dependency Track platform. Required if Service Connection is not specified."
+    },
+    {
+      "name": "dtrackAddVersionTags",
+      "label": "Add Tags",
+      "type": "boolean",
+      "defaultValue": "true",
+      "required": false,
+      "groupName": "addVersionOptions",
+      "helpMarkDown": "Controls whether tags are carried over from the previous latest version to the new version."
+    },
+    {
+      "name": "dtrackAddVersionProperties",
+      "label": "Add Properties",
+      "type": "boolean",
+      "defaultValue": "true",
+      "required": false,
+      "groupName": "addVersionOptions",
+      "helpMarkDown": "Controls whether project properties are carried over from the previous latest version to the new version."
+    },
+    {
+      "name": "dtrackAddVersionServices",
+      "label": "Add Services",
+      "type": "boolean",
+      "defaultValue": "true",
+      "required": false,
+      "groupName": "addVersionOptions",
+      "helpMarkDown": "Controls whether services are carried over from the previous latest version to the new version."
+    },
+    {
+      "name": "dtrackAddVersionACL",
+      "label": "Add ACL",
+      "type": "boolean",
+      "defaultValue": "true",
+      "required": false,
+      "groupName": "addVersionOptions",
+      "helpMarkDown": "Controls whether the portfolio access control list is carried over from the previous latest version to the new version."
+    },
+    {
+      "name": "dtrackAddVersionComponents",
+      "label": "Add Components",
+      "type": "boolean",
+      "defaultValue": "true",
+      "required": false,
+      "groupName": "addVersionOptions",
+      "helpMarkDown": "Controls whether components are carried over from the previous latest version to the new version."
+    },
+    {
+      "name": "dtrackAddVersionFindings",
+      "label": "Add Findings",
+      "type": "boolean",
+      "defaultValue": "true",
+      "required": false,
+      "groupName": "addVersionOptions",
+      "helpMarkDown": "Controls whether findings are carried over from the previous latest version to the new version. Has no effect unless Add Components is also enabled."
+    },
+    {
+      "name": "dtrackAddVersionAuditHistory",
+      "label": "Add Findings Audit History",
+      "type": "boolean",
+      "defaultValue": "true",
+      "required": false,
+      "groupName": "addVersionOptions",
+      "helpMarkDown": "Controls whether findings audit history (e.g. analysis decisions such as 'not affected' or 'false positive') is carried over from the previous latest version to the new version. Has no effect unless Add Findings is also enabled."
+    },
+    {
+      "name": "dtrackAddVersionPolicyViolations",
+      "label": "Add Policy Violations",
+      "type": "boolean",
+      "defaultValue": "true",
+      "required": false,
+      "groupName": "addVersionOptions",
+      "helpMarkDown": "Controls whether policy violations are carried over from the previous latest version to the new version. Has no effect unless Add Components is also enabled."
+    },
+    {
+      "name": "dtrackAddVersionPolicyViolationsAuditHistory",
+      "label": "Add Policy Violations Audit History",
+      "type": "boolean",
+      "defaultValue": "true",
+      "required": false,
+      "groupName": "addVersionOptions",
+      "helpMarkDown": "Controls whether policy violation audit history is carried over from the previous latest version to the new version. Has no effect unless Add Policy Violations is also enabled."
+    },
+    {
+      "name": "caFilePath",
+      "label": "Trusted CA certificate",
+      "type": "filePath",
+      "required": false,
+      "groupName": "sslSettings",
+      "helpMarkDown": "File path to PEM encoded CA certificate. This setting is used when Dependency Track is using a self-signed certificate or an internal CA provider for it's TLS configuration."
+    }
+  ],
+  "messages": {
+    "FileNotFound": "File path is not a file: %s",
+    "UnableToReadCA": "Unable to read certificate file: %s",
+    "ReadingCA": "Reading certificate from location: %s",
+    "TaskSucceed": "Finished task execution successfully!",
+    "TaskFailed": "Finished task execution with error - %s",
+    "Polling": "Polling Dependency Track for update.",
+    "PollingFailed": "Polling Dependency Track for update Failed: %s",
+    "GetProjectUuidStarting": "Getting project id using name '%s' and version '%s'.",
+    "MissingProjectInfo": "Project name and version are required.",
+    "GetVersionFailed": "Failed to determine Dependency Track version: %s",
+    "AddingVersion": "Project '%s' version '%s' will be used as the basis for new version '%s', carrying over its settings and audit history.",
+    "AddVersionSucceed": "Adding the new project version succeeded. New project id: '%s'.",
+    "AddVersionFailed": "Adding the new project version failed: %s",
+    "ProjectAlreadyExists": "Project '%s' version '%s' already exists (id: '%s'). Nothing to do.",
+    "NoPreviousVersionToAdd": "No previous version of project '%s' was found to add version '%s' from. Nothing to do."
+  },
+  "execution": {
+    "Node20_1": {
+      "target": "task.js"
+    }
+  }
+}

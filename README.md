@@ -94,26 +94,6 @@ Provide **one** of the following:
 | `dtrackParentProjVersion` | Parent project version (with optional auto-create) |
 | `dtrackIsLatest` | Sets the project as the latest version. Defaults to false. |
 
-### Clone Options (Auto-Create)
-
-When `dtrackProjAutoCreate` is `true` and no project with the given name and version exists yet, but a previous "latest" version of the project does, that previous version is automatically cloned into the new version before the BOM is uploaded. This carries over audit decisions (e.g. "not affected" / "false positive") and other settings instead of starting from a blank project.
-
-These inputs control what gets carried over during that clone. All default to `true`:
-
-| Name | Description |
-|------|-------------|
-| `dtrackCloneTags` | Carry over project tags |
-| `dtrackCloneProperties` | Carry over project properties |
-| `dtrackCloneServices` | Carry over services |
-| `dtrackCloneACL` | Carry over the portfolio access control list |
-| `dtrackCloneComponents` | Carry over components |
-| `dtrackCloneFindings` | Carry over findings. Has no effect unless `dtrackCloneComponents` is also enabled |
-| `dtrackCloneAuditHistory` | Carry over findings audit history (analysis decisions such as "not affected" or "false positive"). Has no effect unless `dtrackCloneFindings` is also enabled |
-| `dtrackClonePolicyViolations` | Carry over policy violations. Has no effect unless `dtrackCloneComponents` is also enabled |
-| `dtrackClonePolicyViolationsAuditHistory` | Carry over policy violation audit history. Has no effect unless `dtrackClonePolicyViolations` is also enabled |
-
-See [🧬 Project Version Cloning](#-project-version-cloning) below for more details.
-
 ---
 
 ## 🗝️ Required Permissions
@@ -126,7 +106,7 @@ The following table outlines the minimum permissions required in Dependency-Trac
 | **Upload and create project** | `BOM_UPLOAD` + `PROJECT_CREATION_UPLOAD` |
 | **Use thresholds** | `VIEW_PORTFOLIO` |
 | **Update project properties** | `PORTFOLIO_MANAGEMENT` |
-| **Auto-create with cloning of a previous version** | `BOM_UPLOAD` + `PROJECT_CREATION_UPLOAD` + `PORTFOLIO_MANAGEMENT` |
+| **Add a new project version** (via the `AddProjectVersion` task) | `BOM_UPLOAD` + `PROJECT_CREATION_UPLOAD` + `PORTFOLIO_MANAGEMENT` |
 
 ### Recommended Setup
 
@@ -135,7 +115,7 @@ For most CI/CD scenarios:
 BOM_UPLOAD + PROJECT_CREATION_UPLOAD + VIEW_PORTFOLIO
 ```
 
-Add `PORTFOLIO_MANAGEMENT` if you need to set project descriptions, tags, or other properties, or if `dtrackProjAutoCreate` should be able to clone settings and audit history from a previous project version.
+Add `PORTFOLIO_MANAGEMENT` if you need to set project descriptions, tags, or other properties.
 
 ---
 
@@ -190,15 +170,34 @@ As a result, pipelines that set any of these properties will take longer to comp
 
 ---
 
-## 🧬 Project Version Cloning
+## ➕ Add Project Version
 
-When `dtrackProjAutoCreate` is `true`, the task will look for an existing project with the given name and version before doing anything else:
+The `AddProjectVersion` task adds a new version of a Dependency-Track project, carrying over audit decisions (e.g. "not affected" / "false positive") and other settings from the previous "latest" version — mirroring the "Add Version" action in the Dependency-Track UI. Run it before `UploadBOM` (with `dtrackProjAutoCreate: true`) so that newly auto-created versions start from the previous version's settings instead of a blank project.
 
-1. If a project with that exact name **and** version already exists, the BOM is uploaded to it directly — no cloning happens.
-2. Otherwise, if a "latest" version of a project with that name exists (with a different version), it is cloned into the new version, carrying over tags, properties, components, findings, audit history, policy violations, services and ACL according to the [Clone Options](#clone-options-auto-create) inputs (all enabled by default). The BOM is then uploaded to the newly cloned project.
-3. If neither exists, a brand-new project is created (optionally as a child of `dtrackParentProjName`/`dtrackParentProjVersion`) and the BOM is uploaded to it.
+The task looks for an existing project with the given name and version:
 
-This means audit decisions (e.g. "not affected" / "false positive") and project metadata from the previous version automatically carry forward to each new version uploaded, without any manual project setup.
+1. If a project with that exact name **and** version already exists, the task is a no-op.
+2. Otherwise, if a "latest" version of a project with that name exists (with a different version), it is cloned into the new version, carrying over tags, properties, components, findings, audit history, policy violations, services and ACL according to the inputs below (all enabled by default).
+3. If neither exists, the task is a no-op — `UploadBOM` with `dtrackProjAutoCreate: true` will create the project from scratch.
+
+### Inputs
+
+| Name | Description |
+|------|-------------|
+| `serviceConnection`, or `dtrackAPIKey` and `dtrackURI` | Service connection or API key and URL to Dependency-Track |
+| `dtrackProjName` | Project name |
+| `dtrackProjVersion` | Project version to add |
+| `dtrackIsLatest` | Sets the new project version as the latest version. Defaults to false. |
+| `dtrackAddVersionTags` | Carry over project tags. Default `true` |
+| `dtrackAddVersionProperties` | Carry over project properties. Default `true` |
+| `dtrackAddVersionServices` | Carry over services. Default `true` |
+| `dtrackAddVersionACL` | Carry over the portfolio access control list. Default `true` |
+| `dtrackAddVersionComponents` | Carry over components. Default `true` |
+| `dtrackAddVersionFindings` | Carry over findings. Has no effect unless `dtrackAddVersionComponents` is also enabled. Default `true` |
+| `dtrackAddVersionAuditHistory` | Carry over findings audit history. Has no effect unless `dtrackAddVersionFindings` is also enabled. Default `true` |
+| `dtrackAddVersionPolicyViolations` | Carry over policy violations. Has no effect unless `dtrackAddVersionComponents` is also enabled. Default `true` |
+| `dtrackAddVersionPolicyViolationsAuditHistory` | Carry over policy violation audit history. Has no effect unless `dtrackAddVersionPolicyViolations` is also enabled. Default `true` |
+| `caFilePath` | File path to PEM encoded CA certificate |
 
 ### Dependency-Track v4 vs v5
 
@@ -208,6 +207,29 @@ The task automatically detects which major version of Dependency-Track it is tal
 - **Dependency-Track v5+**: uses the `POST /api/v2/projects/{uuid}/clone` endpoint, which completes synchronously.
 
 No extra configuration is required — the same task inputs work against either version.
+
+### Usage Example
+
+```yaml
+- task: add-dtrack-project-version@1
+  displayName: 'Add Dependency-Track project version'
+  inputs:
+    dtrackProjName: 'my-app'
+    dtrackProjVersion: '1.1.0'
+    dtrackAPIKey: '$(DTRACK_API_KEY)'
+    dtrackURI: 'https://dependency-track.example.com/'
+    dtrackIsLatest: true
+
+- task: upload-bom-dtrack@1
+  displayName: 'Upload SBOM to Dependency-Track'
+  inputs:
+    bomFilePath: '$(Build.TempDirectory)/bom.xml'
+    dtrackProjName: 'my-app'
+    dtrackProjVersion: '1.1.0'
+    dtrackAPIKey: '$(DTRACK_API_KEY)'
+    dtrackURI: 'https://dependency-track.example.com/'
+    dtrackProjAutoCreate: true
+```
 
 ---
 

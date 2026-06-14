@@ -43,27 +43,17 @@ const run = async () => {
   let token = undefined;
   
   if (params.isProjectAutoCreated) {
-    console.log(localize('GetProjectUuidStarting', params.projectName, params.projectVersion));
-    projectId = await dtrackManager.tryGetProjectUUID(params.projectName, params.projectVersion);
-
-    if (!projectId) {
-      projectId = await dtrackManager.cloneLatestProjectVersion(params.projectName, params.projectVersion, params.isLatest, params.cloneOptions);
-    }
-
-    if (projectId) {
-      console.log(localize('BOMUploadWithIdStarting', projectId, params.dtrackURI));
-      token = await dtrackManager.uploadBomAsync(projectId, bom);
-    }
-    else if (params.parentProjectName) {
+    if (params.parentProjectName) {
       console.log(localize('BOMUploadAndCreateChildStarting', params.dtrackURI, params.projectName, params.projectVersion, params.parentProjectName, params.parentProjectVersion));
       token = await dtrackManager.uploadBomAndCreateChildProjectAsync(params.projectName, params.projectVersion, params.parentProjectName, params.parentProjectVersion, params.isLatest, bom);
-      projectId = await dtrackManager.getProjetUUID(params.projectName, params.projectVersion);
     }
     else {
       console.log(localize('BOMUploadAndCreateStarting', params.dtrackURI, params.projectName, params.projectVersion));
       token = await dtrackManager.uploadBomAndCreateProjectAsync(params.projectName, params.projectVersion, params.isLatest, bom);
-      projectId = await dtrackManager.getProjetUUID(params.projectName, params.projectVersion);
     }
+
+    console.log(localize('GetProjectUuidStarting', params.projectName, params.projectVersion));
+    projectId = await dtrackManager.getProjetUUID(params.projectName, params.projectVersion);
   }
   else {
     if (!projectId) {
