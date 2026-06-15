@@ -4,7 +4,8 @@
   "description": "",
   "main": "task.js",
   "scripts": {
-    "build": "babel src --out-dir dist --copy-files"
+    "build": "babel src --out-dir dist --copy-files",
+    "test:integration": "jest --config=jest.integration.config.js"
   },
   "author": "",
   "license": "ISC",
@@ -19,6 +20,8 @@
     "@babel/cli": "^7.29.7",
     "@babel/preset-env": "^7.29.7",
     "@types/node": "^25.9.0",
-    "@types/q": "^1.5.5"
+    "@types/q": "^1.5.5",
+    "babel-jest": "^30.4.1",
+    "jest": "^30.4.2"
   }
 }
