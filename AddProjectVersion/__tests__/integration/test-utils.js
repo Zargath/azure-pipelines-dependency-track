@@ -18,7 +18,7 @@ function getTestApiKey(keyName = 'admin') {
 
     return apiKey;
   } catch (error) {
-    console.error('Failed to retrieve API key:', error.message);
+    console.error('Failed to retrieve API key.');
     throw error;
   }
 }
