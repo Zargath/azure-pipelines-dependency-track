@@ -42,12 +42,13 @@ describe('Task Integration Tests', () => {
         mockTaskLib.reset();
     });
 
-    function setupCommonInputs(projectName, version) {
+    function setupCommonInputs(projectName, version, { sourceVersion } = {}) {
         mockTaskLib.setInput('dtrackURI', BASE_URL);
         mockTaskLib.setInput('dtrackAPIKey', apiKey);
         mockTaskLib.setInput('dtrackProjName', projectName);
         mockTaskLib.setInput('dtrackProjVersion', version);
         mockTaskLib.setBoolInput('dtrackIsLatest', true);
+        if (sourceVersion) mockTaskLib.setInput('dtrackSourceVersion', sourceVersion);
         mockTaskLib.setBoolInput('dtrackAddVersionTags', true);
         mockTaskLib.setBoolInput('dtrackAddVersionProperties', true);
         mockTaskLib.setBoolInput('dtrackAddVersionServices', true);
@@ -124,6 +125,31 @@ describe('Task Integration Tests', () => {
         // Assert — target version already exists as the latest, nothing was created
         expect(taskResult.created).toBe(false);
         expect(taskResult.projectId).toBe(existingProjectId);
+    });
+
+    it('should clone from a specified source version even when it is not the isLatest version', async () => {
+        // Arrange — simulates the UploadBOM case where project versions are created without isLatest
+        const projectName = generateUniqueName('task-test-source-version');
+        const sourceVersion = '1.0.0';
+        const newVersion = '1.0.1';
+
+        // Create source version without isLatest (as UploadBOM would)
+        const sourceProjectId = await dTrackTestFixture.createProject(projectName, sourceVersion, false);
+        expect(sourceProjectId).toBeTruthy();
+
+        setupCommonInputs(projectName, newVersion, { sourceVersion });
+
+        // Act
+        const taskResult = await run();
+
+        // Assert
+        expect(taskResult.created).toBe(true);
+        expect(taskResult.projectId).toBeTruthy();
+        expect(taskResult.projectId).not.toBe(sourceProjectId);
+
+        const newProjectInfo = await dTrackTestFixture.getProjectInfo(taskResult.projectId);
+        expect(newProjectInfo.name).toBe(projectName);
+        expect(newProjectInfo.version).toBe(newVersion);
     });
 
     it('should return created=false when no previous version exists to clone from', async () => {

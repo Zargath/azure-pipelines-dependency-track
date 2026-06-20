@@ -43,10 +43,14 @@ const run = async () => {
     return { projectId: existingProjectId, created: false };
   }
 
-  const cloneResult = await dtrackManager.cloneLatestProjectVersion(params.projectName, params.projectVersion, params.isLatest, params.addVersionOptions);
+  const cloneResult = await dtrackManager.cloneLatestProjectVersion(params.projectName, params.projectVersion, params.isLatest, params.addVersionOptions, params.sourceVersion);
 
   if (!cloneResult) {
-    console.log(localize('NoPreviousVersionToAdd', params.projectName, params.projectVersion));
+    if (params.sourceVersion) {
+      console.log(localize('SpecifiedSourceVersionNotFound', params.sourceVersion, params.projectName, params.projectVersion));
+    } else {
+      console.log(localize('NoPreviousVersionToAdd', params.projectName, params.projectVersion));
+    }
     return { projectId: null, created: false };
   }
 

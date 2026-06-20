@@ -27,6 +27,7 @@ class TaskParametersUtility {
             projectName: tl.getInput('dtrackProjName', true),
             projectVersion: tl.getInput('dtrackProjVersion', true),
             isLatest: isLatest,
+            sourceVersion: tl.getInput('dtrackSourceVersion', false) || null,
             addVersionOptions: {
                 tags: tl.getBoolInput('dtrackAddVersionTags', false),
                 properties: tl.getBoolInput('dtrackAddVersionProperties', false),

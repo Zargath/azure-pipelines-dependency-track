@@ -21,25 +21,28 @@ class DtrackManager {
     }
   }
 
-  async cloneLatestProjectVersion(projectName, newVersion, isLatest, cloneOptions) {
+  async cloneLatestProjectVersion(projectName, newVersion, isLatest, cloneOptions, sourceVersion = null) {
     try {
-      const latestProject = await this.dtrackClient.getLatestProjectVersion(projectName);
-      if (!latestProject) {
+      const sourceProject = sourceVersion
+        ? await this.dtrackClient.getProjectByNameAndVersion(projectName, sourceVersion)
+        : await this.dtrackClient.getLatestProjectVersion(projectName);
+
+      if (!sourceProject) {
         return null;
       }
 
-      if (latestProject.version === newVersion) {
-        return { projectId: latestProject.uuid, created: false };
+      if (sourceProject.version === newVersion) {
+        return { projectId: sourceProject.uuid, created: false };
       }
 
-      console.log(localize('AddingVersion', latestProject.name, latestProject.version, newVersion));
+      console.log(localize('AddingVersion', sourceProject.name, sourceProject.version, newVersion));
 
       const majorVersion = await this.getDtrackMajorVersion();
       let newProjectId;
       if (majorVersion >= 5) {
-        newProjectId = await this.dtrackClient.cloneProjectV2Async(latestProject.uuid, newVersion, isLatest, cloneOptions);
+        newProjectId = await this.dtrackClient.cloneProjectV2Async(sourceProject.uuid, newVersion, isLatest, cloneOptions);
       } else {
-        const token = await this.dtrackClient.cloneProjectV1Async(latestProject.uuid, newVersion, isLatest, cloneOptions);
+        const token = await this.dtrackClient.cloneProjectV1Async(sourceProject.uuid, newVersion, isLatest, cloneOptions);
         await this.waitEventProcessing(token);
         newProjectId = await this.tryGetProjectUUID(projectName, newVersion);
       }

@@ -58,6 +58,14 @@
       "helpMarkDown": "Sets the new project version as the latest version. Defaults to FALSE."
     },
     {
+      "name": "dtrackSourceVersion",
+      "label": "Source Version",
+      "type": "string",
+      "required": false,
+      "groupName": "baseSettings",
+      "helpMarkDown": "The existing version to clone from when creating the new version. If not specified, the version currently marked as 'latest' in Dependency Track is used."
+    },
+    {
       "name": "serviceConnection",
       "label": "Service Connection",
       "type": "connectedService:Generic",
@@ -187,7 +195,8 @@
     "AddVersionSucceed": "Adding the new project version succeeded. New project id: '%s'.",
     "AddVersionFailed": "Adding the new project version failed: %s",
     "ProjectAlreadyExists": "Project '%s' version '%s' already exists (id: '%s'). Nothing to do.",
-    "NoPreviousVersionToAdd": "No previous version of project '%s' was found to add version '%s' from. Nothing to do."
+    "NoPreviousVersionToAdd": "No previous version of project '%s' was found to add version '%s' from. Nothing to do.",
+    "SpecifiedSourceVersionNotFound": "Version '%s' of project '%s' was not found and cannot be used as the source for new version '%s'. Nothing to do."
   },
   "execution": {
     "Node20_1": {

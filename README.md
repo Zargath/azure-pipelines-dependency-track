@@ -172,13 +172,24 @@ As a result, pipelines that set any of these properties will take longer to comp
 
 ## ➕ Add Project Version
 
-The `AddProjectVersion` task adds a new version of a Dependency-Track project, carrying over audit decisions (e.g. "not affected" / "false positive") and other settings from the previous "latest" version — mirroring the "Add Version" action in the Dependency-Track UI. Run it before `UploadBOM` (with `dtrackProjAutoCreate: true`) so that newly auto-created versions start from the previous version's settings instead of a blank project.
+The `AddProjectVersion` task adds a new version of a Dependency-Track project, carrying over audit decisions (e.g. "not affected" / "false positive") and other settings from a previous version — mirroring the "Add Version" action in the Dependency-Track UI. Run it before `UploadBOM` (with `dtrackProjAutoCreate: true`) so that newly created versions start from the previous version's settings instead of a blank project.
 
 The task looks for an existing project with the given name and version:
 
-1. If a project with that exact name **and** version already exists, the task is a no-op.
-2. Otherwise, if a "latest" version of a project with that name exists (with a different version), it is cloned into the new version, carrying over tags, properties, components, findings, audit history, policy violations, services and ACL according to the inputs below (all enabled by default).
-3. If neither exists, the task is a no-op — `UploadBOM` with `dtrackProjAutoCreate: true` will create the project from scratch.
+1. If a project with that exact name **and** version already exists, the task completes with a **warning** (no new version was created).
+2. Otherwise, it looks for a source version to clone from. If `dtrackSourceVersion` is specified, that version is used; otherwise the version marked as **latest** in Dependency-Track is used.
+   - If the source version is found, it is cloned into the new version, carrying over tags, properties, components, findings, audit history, policy violations, services and ACL according to the inputs below (all enabled by default).
+   - If no source version is found, the task completes with a **warning** — `UploadBOM` with `dtrackProjAutoCreate: true` will create the project from scratch.
+
+> **Tip:** If your initial project version was created by `UploadBOM` (which does not set the `isLatest` flag), use `dtrackSourceVersion` to specify the version to clone from explicitly.
+
+### Pipeline result
+
+| Result | Meaning |
+|--------|---------|
+| ✅ Success | A new version was cloned successfully. |
+| ⚠️ Succeeded with issues | The task ran without errors but no new version was created (version already existed, or no source version was found). |
+| ❌ Failed | An unexpected error occurred. |
 
 ### Inputs
 
@@ -188,6 +199,7 @@ The task looks for an existing project with the given name and version:
 | `dtrackProjName` | Project name |
 | `dtrackProjVersion` | Project version to add |
 | `dtrackIsLatest` | Sets the new project version as the latest version. Defaults to false. |
+| `dtrackSourceVersion` | The existing version to clone from. If not specified, the version marked as **latest** in Dependency-Track is used. |
 | `dtrackAddVersionTags` | Carry over project tags. Default `true` |
 | `dtrackAddVersionProperties` | Carry over project properties. Default `true` |
 | `dtrackAddVersionServices` | Carry over services. Default `true` |
@@ -208,7 +220,9 @@ The task automatically detects which major version of Dependency-Track it is tal
 
 No extra configuration is required — the same task inputs work against either version.
 
-### Usage Example
+### Usage Examples
+
+**Default — clone from the latest version:**
 
 ```yaml
 - task: add-dtrack-project-version@1
@@ -229,6 +243,20 @@ No extra configuration is required — the same task inputs work against either 
     dtrackAPIKey: '$(DTRACK_API_KEY)'
     dtrackURI: 'https://dependency-track.example.com/'
     dtrackProjAutoCreate: true
+```
+
+**Explicit source version — useful when no version is marked as latest:**
+
+```yaml
+- task: add-dtrack-project-version@1
+  displayName: 'Add Dependency-Track project version'
+  inputs:
+    dtrackProjName: 'my-app'
+    dtrackProjVersion: '1.1.0'
+    dtrackSourceVersion: '1.0.0'
+    dtrackAPIKey: '$(DTRACK_API_KEY)'
+    dtrackURI: 'https://dependency-track.example.com/'
+    dtrackIsLatest: true
 ```
 
 ---
