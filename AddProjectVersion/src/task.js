@@ -40,24 +40,33 @@ const run = async () => {
 
   if (existingProjectId) {
     console.log(localize('ProjectAlreadyExists', params.projectName, params.projectVersion, existingProjectId));
-    return { projectId: existingProjectId };
+    return { projectId: existingProjectId, created: false };
   }
 
-  const newProjectId = await dtrackManager.cloneLatestProjectVersion(params.projectName, params.projectVersion, params.isLatest, params.addVersionOptions);
+  const cloneResult = await dtrackManager.cloneLatestProjectVersion(params.projectName, params.projectVersion, params.isLatest, params.addVersionOptions);
 
-  if (!newProjectId) {
+  if (!cloneResult) {
     console.log(localize('NoPreviousVersionToAdd', params.projectName, params.projectVersion));
-    return { projectId: null };
+    return { projectId: null, created: false };
   }
 
-  return { projectId: newProjectId };
+  if (!cloneResult.created) {
+    console.log(localize('ProjectAlreadyExists', params.projectName, params.projectVersion, cloneResult.projectId));
+    return { projectId: cloneResult.projectId, created: false };
+  }
+
+  return { projectId: cloneResult.projectId, created: true };
 };
 
 // Only auto-run in production environment, not during tests
 if (process.env.NODE_ENV !== 'test') {
   run().then(
-    () => {
-      console.log(localize('TaskSucceed'));
+    (result) => {
+      if (result.created) {
+        console.log(localize('TaskSucceed'));
+      } else {
+        tl.setResult(tl.TaskResult.SucceededWithIssues, localize('TaskSucceededWithWarning'));
+      }
       process.exit(0);
     },
     err => {

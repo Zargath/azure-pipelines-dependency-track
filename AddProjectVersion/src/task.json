@@ -176,6 +176,7 @@
     "UnableToReadCA": "Unable to read certificate file: %s",
     "ReadingCA": "Reading certificate from location: %s",
     "TaskSucceed": "Finished task execution successfully!",
+    "TaskSucceededWithWarning": "Task completed successfully but no new version was created.",
     "TaskFailed": "Finished task execution with error - %s",
     "Polling": "Polling Dependency Track for update.",
     "PollingFailed": "Polling Dependency Track for update Failed: %s",

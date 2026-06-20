@@ -24,8 +24,12 @@ class DtrackManager {
   async cloneLatestProjectVersion(projectName, newVersion, isLatest, cloneOptions) {
     try {
       const latestProject = await this.dtrackClient.getLatestProjectVersion(projectName);
-      if (!latestProject || latestProject.version === newVersion) {
+      if (!latestProject) {
         return null;
+      }
+
+      if (latestProject.version === newVersion) {
+        return { projectId: latestProject.uuid, created: false };
       }
 
       console.log(localize('AddingVersion', latestProject.name, latestProject.version, newVersion));
@@ -41,7 +45,7 @@ class DtrackManager {
       }
 
       console.log(localize('AddVersionSucceed', newProjectId));
-      return newProjectId;
+      return { projectId: newProjectId, created: true };
     }
     catch (err) {
       throw new Error(localize('AddVersionFailed', Utils.getErrorMessage(err)));
