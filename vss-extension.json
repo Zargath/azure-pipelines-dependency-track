@@ -40,6 +40,19 @@
       "addressable": true
     },
     {
+      "path": "AddProjectVersion/node_modules",
+      "packagePath": "AddProjectVersion/node_modules"
+    },
+    {
+      "path": "AddProjectVersion/dist",
+      "packagePath": "AddProjectVersion"
+    },
+    {
+      "path": "AddProjectVersion/icon.png",
+      "packagePath": "AddProjectVersion/icon.png",
+      "addressable": true
+    },
+    {
       "path": "images",
       "addressable": true
     }
@@ -53,6 +66,16 @@
       ],
       "properties": {
         "name": "UploadBOM"
+      }
+    },
+    {
+      "id": "add-project-version-dtrack",
+      "type": "ms.vss-distributed-task.task",
+      "targets": [
+        "ms.vss-distributed-task.tasks"
+      ],
+      "properties": {
+        "name": "AddProjectVersion"
       }
     }
   ],

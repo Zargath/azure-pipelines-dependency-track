@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const API_KEY_FOLDER = path.join(__dirname, 'setup/api-keys');
-const TEST_BOM_FILE = path.join(__dirname, 'setup/test-bom.json');
+const API_KEY_FOLDER = path.join(__dirname, '../../../test-environment/api-keys');
+const TEST_BOM_FILE = path.join(__dirname, 'fixtures/test-bom.json');
 
 function getTestApiKey(keyName = 'admin') {
   const apiKeyFile = path.join(API_KEY_FOLDER, `${keyName}.key`);

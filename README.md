@@ -11,6 +11,7 @@ Integrate [Dependency-Track](https://dependencytrack.org/) into your Azure DevOp
 
 - Upload SBOMs (CycloneDX format) to Dependency-Track
 - Automatically create projects if they don’t exist
+- Clone existing project versions, carrying over audit history, findings, and tags
 - Fail builds based on vulnerability thresholds and policies
 - Supports both manual API key input and service connections
 
@@ -106,6 +107,7 @@ The following table outlines the minimum permissions required in Dependency-Trac
 | **Upload and create project** | `BOM_UPLOAD` + `PROJECT_CREATION_UPLOAD` |
 | **Use thresholds** | `VIEW_PORTFOLIO` |
 | **Update project properties** | `PORTFOLIO_MANAGEMENT` |
+| **Add a new project version** (via the `AddProjectVersion` task) | `BOM_UPLOAD` + `PROJECT_CREATION_UPLOAD` + `PORTFOLIO_MANAGEMENT` |
 
 ### Recommended Setup
 
@@ -166,6 +168,74 @@ When any of the following inputs are set, the task will wait for Dependency-Trac
 This is required because Dependency-Track v5 synchronizes certain project fields from the BOM metadata during async processing, which would otherwise overwrite values set by the task. Waiting for processing to complete first ensures the values you configure are the ones that take effect.
 
 As a result, pipelines that set any of these properties will take longer to complete, proportional to the BOM processing time in your Dependency-Track instance.
+
+---
+
+## ➕ Add Project Version
+
+The `AddProjectVersion` task adds a new version of a Dependency-Track project, carrying over audit decisions (e.g. "not affected" / "false positive") and other settings from a previous version — mirroring the "Add Version" action in the Dependency-Track UI. Run it before `UploadBOM` so that the new version already exists when the BOM is uploaded, rather than being created from scratch by `UploadBOM`.
+
+The task looks for an existing project with the given name and version:
+
+1. If a project with that exact name **and** version already exists, the task completes with a **warning** (no new version was created).
+2. Otherwise, it looks for a source version to clone from. If `dtrackSourceVersion` is specified, that version is used; otherwise the version marked as **latest** in Dependency-Track is used.
+
+### Pipeline result
+
+| Result | Meaning |
+|--------|---------|
+| ✅ Success | A new version was cloned successfully. |
+| ⚠️ Succeeded with issues | The task ran without errors but no new version was created (version already existed, or no source version was found). |
+| ❌ Failed | An unexpected error occurred. |
+
+### Inputs
+
+| Name | Description |
+|------|-------------|
+| `serviceConnection`, or `dtrackAPIKey` and `dtrackURI` | Service connection or API key and URL to Dependency-Track |
+| `dtrackProjName` | Project name |
+| `dtrackProjVersion` | Project version to add |
+| `dtrackIsLatest` | Sets the new project version as the latest version. Defaults to false. |
+| `dtrackSourceVersion` | The existing version to clone from. If not specified, the version marked as **latest** in Dependency-Track is used. |
+| `dtrackAddVersionTags` | Carry over project tags. Default `true` |
+| `dtrackAddVersionProperties` | Carry over project properties. Default `true` |
+| `dtrackAddVersionServices` | Carry over services. Default `true` |
+| `dtrackAddVersionACL` | Carry over the portfolio access control list. Default `true` |
+| `dtrackAddVersionComponents` | Carry over components. Default `true` |
+| `dtrackAddVersionFindings` | Carry over findings. Has no effect unless `dtrackAddVersionComponents` is also enabled. Default `true` |
+| `dtrackAddVersionAuditHistory` | Carry over findings audit history. Has no effect unless `dtrackAddVersionFindings` is also enabled. Default `true` |
+| `dtrackAddVersionPolicyViolations` | Carry over policy violations. Has no effect unless `dtrackAddVersionComponents` is also enabled. Default `true` |
+| `dtrackAddVersionPolicyViolationsAuditHistory` | Carry over policy violation audit history. Has no effect unless `dtrackAddVersionPolicyViolations` is also enabled. Default `true` |
+| `caFilePath` | File path to PEM encoded CA certificate |
+
+### Usage Examples
+
+**Default — clone from the latest version:**
+
+```yaml
+variables:
+  dtrackProjName: 'my-app'
+  dtrackProjVersion: '1.1.0'
+  dtrackURI: 'https://dependency-track.example.com/'
+
+- task: add-dtrack-project-version@1
+  displayName: 'Add Dependency-Track project version'
+  inputs:
+    dtrackProjName: $(dtrackProjName)
+    dtrackProjVersion: $(dtrackProjVersion)
+    dtrackAPIKey: '$(DTRACK_API_KEY)'
+    dtrackURI: $(dtrackURI)
+    dtrackIsLatest: true
+
+- task: upload-bom-dtrack@1
+  displayName: 'Upload SBOM to Dependency-Track'
+  inputs:
+    bomFilePath: '$(Build.TempDirectory)/bom.xml'
+    dtrackProjName: $(dtrackProjName)
+    dtrackProjVersion: $(dtrackProjVersion)
+    dtrackAPIKey: '$(DTRACK_API_KEY)'
+    dtrackURI: $(dtrackURI)
+```
 
 ---
 

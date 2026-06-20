@@ -3,7 +3,7 @@ const fs = require('fs');
 const mockTaskLib = require('./mocks/mockTaskLib');
 const DTrackClient = require('../../src/dtrackClient').default;
 const DTrackManager = require('../../src/dtrackManager').default;
-const DTrackTestFixture = require('./setup/DTrackTestFixture');
+const DTrackTestFixture = require('./fixtures/DTrackTestFixture');
 const { getTestApiKey, generateUniqueName } = require('./test-utils');
 
 // Mock the Azure DevOps task library to prevent localization warnings
@@ -21,14 +21,14 @@ describe('DTrackManager Integration Tests - Parent and Child Projects', () => {
         try {
             // Get API key and initialize client and manager
             apiKey = getTestApiKey();
-            const caFilePath = path.join(__dirname, 'setup/certs', 'apiserver.crt');
+            const caFilePath = path.join(__dirname, '../../../test-environment/certs', 'apiserver.crt');
             const caFile = fs.existsSync(caFilePath) ? fs.readFileSync(caFilePath) : undefined;
             client = new DTrackClient(BASE_URL, apiKey, caFile);
             dtrackManager = new DTrackManager(client);
             dTrackTestFixture = new DTrackTestFixture(BASE_URL, apiKey, caFile);
 
             // Load test BOM file
-            const bomPath = path.join(__dirname, 'setup/test-bom.json');
+            const bomPath = path.join(__dirname, 'fixtures/test-bom.json');
             testBom = fs.readFileSync(bomPath);
         } catch (error) {
             console.error('Failed to setup test:', error);
@@ -53,7 +53,7 @@ describe('DTrackManager Integration Tests - Parent and Child Projects', () => {
         expect(token).toBeTruthy();
 
         // Wait for BOM processing to complete
-        await dtrackManager.waitBomProcessing(token);
+        await dtrackManager.waitEventProcessing(token);
 
         // Get project UUID and verify it exists
         const projectId = await dtrackManager.getProjetUUID(
@@ -92,7 +92,7 @@ describe('DTrackManager Integration Tests - Parent and Child Projects', () => {
         expect(token).toBeTruthy();
 
         // Wait for BOM processing to complete
-        await dtrackManager.waitBomProcessing(token);
+        await dtrackManager.waitEventProcessing(token);
 
         // Get child project UUID and verify it exists
         const childProjectId = await dtrackManager.getProjetUUID(
@@ -138,7 +138,7 @@ describe('DTrackManager Integration Tests - Parent and Child Projects', () => {
         expect(token).toBeTruthy();
 
         // Wait for BOM processing to complete
-        await dtrackManager.waitBomProcessing(token);
+        await dtrackManager.waitEventProcessing(token);
 
         // Get child project UUID and verify it exists
         const childProjectId = await dtrackManager.getProjetUUID(

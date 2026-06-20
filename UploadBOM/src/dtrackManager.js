@@ -25,11 +25,11 @@ class DtrackManager {
   async updateProject(projectId, description, classifier, swidTagId, group, tags, isLatest) {
     try {
       // Check if any update parameters are actually set
-      const hasUpdateParams = description || 
-                              classifier || 
-                              swidTagId || 
-                              group || 
-                              (tags && tags.length > 0) || 
+      const hasUpdateParams = description ||
+                              classifier ||
+                              swidTagId ||
+                              group ||
+                              (tags && tags.length > 0) ||
                               typeof isLatest === 'boolean';
 
       if (!hasUpdateParams) {
@@ -135,7 +135,7 @@ class DtrackManager {
     }
   }
 
-  async waitBomProcessing(token) {
+  async waitEventProcessing(token) {
     let processing = true;
     while (processing) {
       await Utils.sleepAsync(2000);

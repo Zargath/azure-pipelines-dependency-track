@@ -3,7 +3,7 @@ const fs = require('fs');
 const { getTestApiKey, generateUniqueName, waitForBomProcessing, waitForMetricsRefresh } = require('./test-utils');
 const DTrackClient = require('../../src/dtrackClient').default;
 const mockTaskLib = require('./mocks/mockTaskLib');
-const DTrackTestFixture = require('./setup/DTrackTestFixture');
+const DTrackTestFixture = require('./fixtures/DTrackTestFixture');
 
 // Import the run function from task.js
 const { run } = require('../../src/task.js');
@@ -28,15 +28,15 @@ describe('Task Integration Tests', () => {
         try {
             // Get API key
             apiKey = getTestApiKey();
-            caFilePath = path.join(__dirname, 'setup/certs', 'apiserver.crt');
+            caFilePath = path.join(__dirname, '../../../test-environment/certs', 'apiserver.crt');
             caFile = fs.existsSync(caFilePath) ? fs.readFileSync(caFilePath) : undefined;
 
             dTrackTestFixture = new DTrackTestFixture(BASE_URL, apiKey, caFile);
 
             // Load test BOM file
-            testBomFilePath = path.join(__dirname, 'setup/test-bom.json');
+            testBomFilePath = path.join(__dirname, 'fixtures/test-bom.json');
             testBom = fs.readFileSync(testBomFilePath);
-            vulnerableBomFilePath = path.join(__dirname, 'setup/vulnerable-bom.json');
+            vulnerableBomFilePath = path.join(__dirname, 'fixtures/vulnerable-bom.json');
             
             // Setup mockTaskLib with proper inputs
             mockTaskLib.reset();

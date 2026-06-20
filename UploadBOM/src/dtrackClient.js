@@ -9,7 +9,7 @@ class DTrackClient {
     // Create axios instance with common configuration
     this.axiosInstance = axios.create({
       baseURL: this.baseUrl,
-      headers: { 
+      headers: {
         'X-API-Key': this.apiKey
       },
       ...(this.caFile ? { httpsAgent: new (require('https').Agent)({ ca: this.caFile }) } : {}),
@@ -23,7 +23,7 @@ class DTrackClient {
     };
     return this.#postBomAsync(data);
   }
-  
+
   uploadBomAndCreateProjectAsync(name, version, isLatest, bom) {
     const data = {
       "autoCreate": 'true',
@@ -34,7 +34,7 @@ class DTrackClient {
     };
     return this.#postBomAsync(data);
   }
-  
+
   uploadBomAndCreateChildProjectAsync(name, version, parentUuid, isLatest, bom) {
     const data = {
       "autoCreate": 'true',
@@ -47,23 +47,6 @@ class DTrackClient {
     return this.#postBomAsync(data);
   }
 
-  async createProjectAsync(projectName, projectVersion) {
-    try {
-      const response = await this.axiosInstance.post('/api/v1/project', {
-        "name": projectName,
-        "version": projectVersion
-      });
-      
-      if (response.status === 201) {
-        return response.data.uuid;
-      } else {
-        throw new Error(`Unexpected status code: ${response.status}`);
-      }
-    } catch (error) {
-      throw { error, response: error.response };
-    }
-  }
-  
   async getProjectUUID(projectName, projectVersion) {
     if (!projectVersion) {
       return this.getProjectUUIDByName(projectName);
@@ -71,7 +54,7 @@ class DTrackClient {
 
     try {
       const response = await this.axiosInstance.get(`/api/v1/project/lookup?name=${projectName}&version=${projectVersion}`);
-      
+
       if (response.status === 200) {
         let projectUUID = '';
         if(response.data){
@@ -88,13 +71,13 @@ class DTrackClient {
   async getProjectUUIDByName(projectName) {
     try {
       const response = await this.axiosInstance.get(`/api/v1/project?name=${projectName}`);
-      
+
       if (response.status === 200) {
         const totalCount = response.headers['x-total-count'];
         if(totalCount > 1){
-          throw { error: new Error('Multiple projects found with the same name. Please specify a version.') }; 
+          throw { error: new Error('Multiple projects found with the same name. Please specify a version.') };
         }
-        
+
         let projectUUID = '';
         if(response.data){
           projectUUID = response.data[0].uuid;
@@ -110,7 +93,7 @@ class DTrackClient {
   async pullProcessingStatusAsync(token) {
     try {
       const response = await this.axiosInstance.get(`/api/v1/event/token/${token}`);
-      
+
       if (response.status === 200) {
         return response.data.processing;
       }
@@ -123,7 +106,7 @@ class DTrackClient {
   async getProjectMetricsAsync(projId) {
     try {
       const response = await this.axiosInstance.get(`/api/v1/metrics/project/${projId}/current`);
-      
+
       if (response.status === 200) {
         return response.data;
       }
@@ -136,14 +119,14 @@ class DTrackClient {
   async getLastMetricCalculationDate(projId) {
     try {
       const response = await this.axiosInstance.get(`/api/v1/metrics/project/${projId}/current`);
-      
+
       if (response.status === 200) {
         let lastOccurrence = new Date(0);
 
         // Dependency Track might return an empty response body if metrics have never been calculated before.
         if(response.data) {
           lastOccurrence = new Date(response.data.lastOccurrence);
-        } 
+        }
 
         return lastOccurrence;
       }
@@ -156,7 +139,7 @@ class DTrackClient {
   async getProjectInfo(projId) {
     try {
       const response = await this.axiosInstance.get(`/api/v1/project/${projId}`);
-      
+
       if (response.status === 200) {
         return response.data;
       }
@@ -185,7 +168,7 @@ class DTrackClient {
 
     try {
       const response = await this.axiosInstance.patch(`/api/v1/project/${projId}`, data);
-      
+
       if (response.status === 200) {
         return response.data;
       } else {
@@ -200,7 +183,7 @@ class DTrackClient {
     try {
       const FormData = require('form-data');
       const formData = new FormData();
-      
+
       // Add each property to the form data
       Object.keys(data).forEach(key => {
         formData.append(key, data[key]);
@@ -211,7 +194,7 @@ class DTrackClient {
           ...formData.getHeaders(),
         }
       });
-      
+
       if (response.status === 200) {
         return response.data.token;
       } else {

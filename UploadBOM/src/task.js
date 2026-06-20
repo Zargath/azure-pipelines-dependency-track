@@ -46,7 +46,7 @@ const run = async () => {
     if (params.parentProjectName) {
       console.log(localize('BOMUploadAndCreateChildStarting', params.dtrackURI, params.projectName, params.projectVersion, params.parentProjectName, params.parentProjectVersion));
       token = await dtrackManager.uploadBomAndCreateChildProjectAsync(params.projectName, params.projectVersion, params.parentProjectName, params.parentProjectVersion, params.isLatest, bom);
-    } 
+    }
     else {
       console.log(localize('BOMUploadAndCreateStarting', params.dtrackURI, params.projectName, params.projectVersion));
       token = await dtrackManager.uploadBomAndCreateProjectAsync(params.projectName, params.projectVersion, params.isLatest, bom);
@@ -87,7 +87,7 @@ const run = async () => {
   // applied before processing completes.
   if (hasThresholdAction || hasProjectUpdate) {
     console.log(localize('ProcessingBOM'));
-    await dtrackManager.waitBomProcessing(token);
+    await dtrackManager.waitEventProcessing(token);
   }
 
   await dtrackManager.updateProject(projectId, params.projectDescription, params.projectClassifier, params.projectSwidTagId, params.projectGroup, params.projectTags, params.isLatest);
