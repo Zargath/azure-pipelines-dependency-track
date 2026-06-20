@@ -11,6 +11,7 @@ Integrate [Dependency-Track](https://dependencytrack.org/) into your Azure DevOp
 
 - Upload SBOMs (CycloneDX format) to Dependency-Track
 - Automatically create projects if they don’t exist
+- Clone existing project versions, carrying over audit history, findings, and tags
 - Fail builds based on vulnerability thresholds and policies
 - Supports both manual API key input and service connections
 
@@ -172,16 +173,12 @@ As a result, pipelines that set any of these properties will take longer to comp
 
 ## ➕ Add Project Version
 
-The `AddProjectVersion` task adds a new version of a Dependency-Track project, carrying over audit decisions (e.g. "not affected" / "false positive") and other settings from a previous version — mirroring the "Add Version" action in the Dependency-Track UI. Run it before `UploadBOM` (with `dtrackProjAutoCreate: true`) so that newly created versions start from the previous version's settings instead of a blank project.
+The `AddProjectVersion` task adds a new version of a Dependency-Track project, carrying over audit decisions (e.g. "not affected" / "false positive") and other settings from a previous version — mirroring the "Add Version" action in the Dependency-Track UI. Run it before `UploadBOM` so that the new version already exists when the BOM is uploaded, rather than being created from scratch by `UploadBOM`.
 
 The task looks for an existing project with the given name and version:
 
 1. If a project with that exact name **and** version already exists, the task completes with a **warning** (no new version was created).
 2. Otherwise, it looks for a source version to clone from. If `dtrackSourceVersion` is specified, that version is used; otherwise the version marked as **latest** in Dependency-Track is used.
-   - If the source version is found, it is cloned into the new version, carrying over tags, properties, components, findings, audit history, policy violations, services and ACL according to the inputs below (all enabled by default).
-   - If no source version is found, the task completes with a **warning** — `UploadBOM` with `dtrackProjAutoCreate: true` will create the project from scratch.
-
-> **Tip:** If your initial project version was created by `UploadBOM` (which does not set the `isLatest` flag), use `dtrackSourceVersion` to specify the version to clone from explicitly.
 
 ### Pipeline result
 
@@ -211,52 +208,33 @@ The task looks for an existing project with the given name and version:
 | `dtrackAddVersionPolicyViolationsAuditHistory` | Carry over policy violation audit history. Has no effect unless `dtrackAddVersionPolicyViolations` is also enabled. Default `true` |
 | `caFilePath` | File path to PEM encoded CA certificate |
 
-### Dependency-Track v4 vs v5
-
-The task automatically detects which major version of Dependency-Track it is talking to (via `GET /api/version`) and uses the appropriate clone API:
-
-- **Dependency-Track v4**: uses the legacy `PUT /api/v1/project/clone` endpoint and waits for the clone operation to finish processing before continuing.
-- **Dependency-Track v5+**: uses the `POST /api/v2/projects/{uuid}/clone` endpoint, which completes synchronously.
-
-No extra configuration is required — the same task inputs work against either version.
-
 ### Usage Examples
 
 **Default — clone from the latest version:**
 
 ```yaml
+variables:
+  dtrackProjName: 'my-app'
+  dtrackProjVersion: '1.1.0'
+  dtrackURI: 'https://dependency-track.example.com/'
+
 - task: add-dtrack-project-version@1
   displayName: 'Add Dependency-Track project version'
   inputs:
-    dtrackProjName: 'my-app'
-    dtrackProjVersion: '1.1.0'
+    dtrackProjName: $(dtrackProjName)
+    dtrackProjVersion: $(dtrackProjVersion)
     dtrackAPIKey: '$(DTRACK_API_KEY)'
-    dtrackURI: 'https://dependency-track.example.com/'
+    dtrackURI: $(dtrackURI)
     dtrackIsLatest: true
 
 - task: upload-bom-dtrack@1
   displayName: 'Upload SBOM to Dependency-Track'
   inputs:
     bomFilePath: '$(Build.TempDirectory)/bom.xml'
-    dtrackProjName: 'my-app'
-    dtrackProjVersion: '1.1.0'
+    dtrackProjName: $(dtrackProjName)
+    dtrackProjVersion: $(dtrackProjVersion)
     dtrackAPIKey: '$(DTRACK_API_KEY)'
-    dtrackURI: 'https://dependency-track.example.com/'
-    dtrackProjAutoCreate: true
-```
-
-**Explicit source version — useful when no version is marked as latest:**
-
-```yaml
-- task: add-dtrack-project-version@1
-  displayName: 'Add Dependency-Track project version'
-  inputs:
-    dtrackProjName: 'my-app'
-    dtrackProjVersion: '1.1.0'
-    dtrackSourceVersion: '1.0.0'
-    dtrackAPIKey: '$(DTRACK_API_KEY)'
-    dtrackURI: 'https://dependency-track.example.com/'
-    dtrackIsLatest: true
+    dtrackURI: $(dtrackURI)
 ```
 
 ---
