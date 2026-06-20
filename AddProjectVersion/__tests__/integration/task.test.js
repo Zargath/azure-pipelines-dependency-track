@@ -152,6 +152,25 @@ describe('Task Integration Tests', () => {
         expect(newProjectInfo.version).toBe(newVersion);
     });
 
+    it('should return created=false when the specified source version does not exist', async () => {
+        // Arrange — project exists with a version, but the requested sourceVersion is not among them
+        const projectName = generateUniqueName('task-test-source-version-missing');
+        const existingVersion = '1.0.0';
+        const newVersion = '1.0.1';
+        const missingSourceVersion = '0.9.0';
+
+        await dTrackTestFixture.createProject(projectName, existingVersion, false);
+
+        setupCommonInputs(projectName, newVersion, { sourceVersion: missingSourceVersion });
+
+        // Act
+        const taskResult = await run();
+
+        // Assert — sourceVersion not found, nothing was created
+        expect(taskResult.created).toBe(false);
+        expect(taskResult.projectId).toBeNull();
+    });
+
     it('should return created=false when no previous version exists to clone from', async () => {
         // Arrange — use a project name that does not exist in DTrack
         const projectName = generateUniqueName('task-test-no-previous-version');
