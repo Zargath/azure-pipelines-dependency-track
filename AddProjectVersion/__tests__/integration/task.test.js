@@ -32,7 +32,7 @@ describe('Task Integration Tests', () => {
             // Setup mockTaskLib with proper inputs
             mockTaskLib.reset();
         } catch (error) {
-            console.error('Failed to setup test:', error);
+            console.error('Failed to setup test.');
             throw error;
         }
     });
