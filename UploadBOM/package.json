@@ -19,7 +19,7 @@
     "form-data": "^4.0.6"
   },
   "devDependencies": {
-    "@babel/cli": "^7.29.7",
+    "@babel/cli": "^8.0.1",
     "@babel/preset-env": "^7.29.7",
     "@types/node": "^25.9.3",
     "@types/q": "^1.5.5",
