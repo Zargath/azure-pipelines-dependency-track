@@ -14,6 +14,13 @@ updates:
       interval: "weekly"
     open-pull-requests-limit: 5
 
+  # Enable version updates for npm (AddProjectVersion package.json)
+  - package-ecosystem: "npm"
+    directory: "/AddProjectVersion"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+
   # Enable version updates for GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
