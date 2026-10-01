@@ -37,7 +37,7 @@ const run = async () => {
   const bom = loadFile(params.bomFilePath, 'UnableToReadBom');
   
   const client = new DTrackClient(params.dtrackURI, params.dtrackAPIKey, caFile);
-  const dtrackManager = new DTrackManager(client);
+  const dtrackManager = new DTrackManager(client, Number.parseInt(params.pollingTimeoutSeconds));
   
   let projectId = params.projectId;
   let token = undefined;

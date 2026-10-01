@@ -195,4 +195,68 @@ describe('DtrackManager', () => {
         .toThrow('BOMUploadFailed: Upload failed');
     });
   });
+
+  describe('waitEventProcessing', () => {
+    it('should resolve once processing completes before the timeout', async () => {
+      mockDtrackClient.pullProcessingStatusAsync
+        .mockResolvedValueOnce(true)
+        .mockResolvedValueOnce(false);
+
+      await dtrackManager.waitEventProcessing('token123');
+
+      expect(mockDtrackClient.pullProcessingStatusAsync).toHaveBeenCalledTimes(2);
+    });
+
+    it('should throw PollingTimeoutExceeded when processing never completes in time', async () => {
+      const shortTimeoutManager = new DtrackManager(mockDtrackClient, 0);
+      mockDtrackClient.pullProcessingStatusAsync.mockResolvedValue(true);
+
+      await expect(shortTimeoutManager.waitEventProcessing('token123'))
+        .rejects
+        .toThrow('PollingTimeoutExceeded: 0');
+    });
+
+    it('should propagate PollingFailed when the client throws', async () => {
+      mockDtrackClient.pullProcessingStatusAsync.mockRejectedValue(new Error('network error'));
+
+      await expect(dtrackManager.waitEventProcessing('token123'))
+        .rejects
+        .toThrow('PollingFailed: network error');
+    });
+  });
+
+  describe('waitMetricsRefresh', () => {
+    const projectId = '123e4567-e89b-12d3-a456-426614174000';
+
+    it('should resolve once lastOccurrence catches up to lastBomImport', async () => {
+      mockDtrackClient.getProjectInfo.mockResolvedValue({ lastBomImport: '2024-01-01T00:00:00Z' });
+      mockDtrackClient.getLastMetricCalculationDate
+        .mockResolvedValueOnce(new Date('2023-12-31T00:00:00Z'))
+        .mockResolvedValueOnce(new Date('2024-01-02T00:00:00Z'));
+
+      await dtrackManager.waitMetricsRefresh(projectId);
+
+      expect(mockDtrackClient.getLastMetricCalculationDate).toHaveBeenCalledTimes(2);
+    });
+
+    it('should throw PollingTimeoutExceeded when metrics never catch up in time', async () => {
+      mockDtrackClient.getProjectInfo.mockResolvedValue({ lastBomImport: '2024-01-01T00:00:00Z' });
+      mockDtrackClient.getLastMetricCalculationDate.mockResolvedValue(new Date('2023-12-31T00:00:00Z'));
+
+      const shortTimeoutManager = new DtrackManager(mockDtrackClient, 0);
+
+      await expect(shortTimeoutManager.waitMetricsRefresh(projectId))
+        .rejects
+        .toThrow('PollingTimeoutExceeded: 0');
+    });
+
+    it('should propagate PollingFailed when the client throws', async () => {
+      mockDtrackClient.getProjectInfo.mockResolvedValue({ lastBomImport: '2024-01-01T00:00:00Z' });
+      mockDtrackClient.getLastMetricCalculationDate.mockRejectedValue(new Error('network error'));
+
+      await expect(dtrackManager.waitMetricsRefresh(projectId))
+        .rejects
+        .toThrow('PollingFailed: network error');
+    });
+  });
 });

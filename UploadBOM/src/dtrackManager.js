@@ -2,8 +2,9 @@ import { localize } from './localization.js'
 import Utils from './utils.js'
 
 class DtrackManager {
-  constructor(dtrackClient) {
+  constructor(dtrackClient, pollingTimeoutSeconds = 300) {
     this.dtrackClient = dtrackClient;
+    this.pollingTimeoutSeconds = pollingTimeoutSeconds;
   }
 
   async getProjetUUID(name, version) {
@@ -136,8 +137,11 @@ class DtrackManager {
   }
 
   async waitEventProcessing(token) {
+    const startTime = Date.now();
+    const timeoutMs = this.pollingTimeoutSeconds * 1000;
     let processing = true;
-    while (processing) {
+
+    while (processing && (Date.now() - startTime) < timeoutMs) {
       await Utils.sleepAsync(2000);
       console.log(localize('Polling'));
       try {
@@ -147,9 +151,15 @@ class DtrackManager {
         throw new Error(localize('PollingFailed', Utils.getErrorMessage(err)));
       }
     }
+
+    if (processing) {
+      throw new Error(localize('PollingTimeoutExceeded', this.pollingTimeoutSeconds));
+    }
   }
 
   async waitMetricsRefresh(projectId) {
+    const startTime = Date.now();
+    const timeoutMs = this.pollingTimeoutSeconds * 1000;
     const lastBomImport = new Date((await this.getProjectInfo(projectId)).lastBomImport);
     let lastOccurrence = undefined;
 
@@ -161,6 +171,10 @@ class DtrackManager {
       }
       catch (err) {
         throw new Error(localize('PollingFailed', Utils.getErrorMessage(err)));
+      }
+
+      if ((Date.now() - startTime) >= timeoutMs) {
+        throw new Error(localize('PollingTimeoutExceeded', this.pollingTimeoutSeconds));
       }
     } while (lastOccurrence < lastBomImport)
 
