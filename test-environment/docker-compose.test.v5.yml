@@ -4,7 +4,7 @@ name: "dependency-track-test"
 services:
   postgres:
     container_name: dtrack-postgres
-    image: postgres:17-alpine
+    image: postgres:18-alpine
     environment:
       POSTGRES_DB: "dtrack"
       POSTGRES_USER: "dtrack"
@@ -15,7 +15,7 @@ services:
       timeout: 3s
       retries: 10
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql
     restart: unless-stopped
   apiserver:
     container_name: dtrack-apiserver
