@@ -57,7 +57,7 @@ wait_for_api_server() {
 
   # Check Docker container health status
   echo "Initial container status:"
-  docker-compose -f "$DOCKER_COMPOSE_PATH" ps
+  docker compose -f "$DOCKER_COMPOSE_PATH" ps
 
   # Increase timeout for containers still in "health: starting" state
   local MAX_HEALTH_CHECK_RETRIES=60  # Increased from 30
@@ -66,7 +66,7 @@ wait_for_api_server() {
     # Check container health every 5 attempts
     if (( attempts % 5 == 0 )); then
       echo "Container status check:"
-      docker-compose -f "$DOCKER_COMPOSE_PATH" ps
+      docker compose -f "$DOCKER_COMPOSE_PATH" ps
     fi
     
     set +e
@@ -103,9 +103,9 @@ wait_for_api_server() {
   if [[ "$is_ready" == "false" ]]; then
     echo "ERROR: API server did not become ready in the allocated time"
     echo "Final Docker container status:"
-    docker-compose -f "$DOCKER_COMPOSE_PATH" ps
+    docker compose -f "$DOCKER_COMPOSE_PATH" ps
     echo "Container logs:"
-    docker-compose -f "$DOCKER_COMPOSE_PATH" logs --tail=100
+    docker compose -f "$DOCKER_COMPOSE_PATH" logs --tail=100
     exit 1
   fi
 
@@ -269,7 +269,7 @@ start_dependency_track() {
 
   # Start the containers
   echo "Starting Docker containers..."
-  docker-compose -f "$DOCKER_COMPOSE_PATH" up -d
+  docker compose -f "$DOCKER_COMPOSE_PATH" up -d
 
   # Wait for the API server to be ready
   wait_for_api_server
@@ -289,7 +289,7 @@ stop_dependency_track() {
   echo "Stopping Dependency Track containers..."
   
   # Stop containers
-  docker-compose -f "$DOCKER_COMPOSE_PATH" down -v
+  docker compose -f "$DOCKER_COMPOSE_PATH" down -v
   
   # Remove the API keys directory
   local API_KEYS_DIR="${SETUP_DIR}/api-keys"

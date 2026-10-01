@@ -31,4 +31,4 @@ chmod 644 "${CERT_DIR}"/*.crt
 chmod 600 "${CERT_DIR}"/*.key
 
 echo "Certificates generated successfully in ${CERT_DIR}"
-echo "You can now use these certificates with your docker-compose setup."
+echo "You can now use these certificates with your docker compose setup."
