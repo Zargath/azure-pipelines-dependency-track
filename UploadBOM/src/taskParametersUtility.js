@@ -42,6 +42,7 @@ class TaskParametersUtility {
             dtrackAPIKey: dtrackAPIKey,
             dtrackURI: dtrackURI,
             caFilePath: tl.getPathInput('caFilePath', false, true),
+            pollingTimeoutSeconds: tl.getInput('dtrackPollingTimeoutSeconds', false) || '300',
 
             thresholdAction: tl.getInput('thresholdAction', false) || 'none',
             thresholdCritical: tl.getInput('thresholdCritical', false) || -1,
@@ -68,6 +69,11 @@ class TaskParametersUtility {
             if (!params.projectId) {
                 throw new Error(localize("MissingProjectInfoWhenNoProjectId"));
             }
+        }
+
+        const pollingTimeoutSeconds = Number.parseInt(params.pollingTimeoutSeconds);
+        if (!Number.isInteger(pollingTimeoutSeconds) || pollingTimeoutSeconds <= 0) {
+            throw new Error(localize("InvalidPollingTimeout", params.pollingTimeoutSeconds));
         }
     }
 }

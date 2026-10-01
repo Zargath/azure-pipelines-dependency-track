@@ -16,11 +16,12 @@ class DTrackTestFixture {
     });
   }
 
-  async createProject(name, version) {
+  async createProject(name, version, extraFields = {}) {
     try {
       const projectData = {
         name,
-        version
+        version,
+        ...extraFields
       };
 
       const response = await this.axiosInstance.put('/api/v1/project', projectData);
@@ -42,6 +43,17 @@ class DTrackTestFixture {
         body: error.response?.data,
         message: error.message || 'Failed to create parent project'
       };
+    }
+  }
+
+  async getRawMetrics(projId) {
+    try {
+      return await this.axiosInstance.get(`/api/v1/metrics/project/${projId}/current`);
+    } catch (error) {
+      if (error.response) {
+        return error.response;
+      }
+      throw error;
     }
   }
 
