@@ -71,12 +71,13 @@ if (process.env.NODE_ENV !== 'test') {
       } else {
         tl.setResult(tl.TaskResult.SucceededWithIssues, localize('TaskSucceededWithWarning'));
       }
-      process.exit(0);
+      // See UploadBOM/src/task.js for why exitCode (not exit()) is used here.
+      process.exitCode = 0;
     },
     err => {
       console.error(localize('TaskFailed', err));
       tl.setResult(tl.TaskResult.Failed, err.message);
-      process.exit(1);
+      process.exitCode = 1;
     }
   );
 }
