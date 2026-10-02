@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const mockTaskLib = require('./mocks/mockTaskLib');
+const DTrackTestFixture = require('./fixtures/DTrackTestFixture');
 const { getTestApiKey, generateUniqueName } = require('./test-utils');
 
 const { run } = require('../../src/task.js');
@@ -22,14 +23,19 @@ describe('Metrics dedup-skip on re-upload (real production regression)', () => {
   let apiKey;
   let caFilePath;
   let vulnerableBomFilePath;
+  let isV4;
 
-  beforeAll(() => {
+  beforeAll(async () => {
     // Needs VIEW_VULNERABILITY + VIEW_POLICY_VIOLATION (none of the scoped test teams grant
     // these) so the fix's findings/violations snapshot actually runs instead of silently
     // falling back - see the separate "missing permissions" test below for that fallback path.
     apiKey = getTestApiKey();
     caFilePath = path.join(__dirname, '../../../test-environment/certs/apiserver.crt');
     vulnerableBomFilePath = path.join(__dirname, 'fixtures/vulnerable-bom.json');
+
+    const caFile = fs.existsSync(caFilePath) ? fs.readFileSync(caFilePath) : undefined;
+    const fixture = new DTrackTestFixture(BASE_URL, apiKey, caFile);
+    isV4 = (await fixture.getMajorVersion()) < 5;
   });
 
   beforeEach(() => {
@@ -73,6 +79,13 @@ describe('Metrics dedup-skip on re-upload (real production regression)', () => {
   }, 60000);
 
   it('falls back to the original timeout error when the API key lacks VIEW_VULNERABILITY/VIEW_POLICY_VIOLATION', async () => {
+    if (isV4) {
+      // DT v4 has no metrics dedup-skip optimization at all (that's 5.1.x-specific), so a
+      // repeat upload always gets a fresh metrics row regardless of permissions - there's no
+      // timeout to fall back to here. This test is only meaningful on 5.1.x+.
+      return;
+    }
+
     const projectName = generateUniqueName('dedup-skip-no-permission-test');
     const projectVersion = '1.0.0';
     const scopedApiKey = getTestApiKey('Project-Creator');

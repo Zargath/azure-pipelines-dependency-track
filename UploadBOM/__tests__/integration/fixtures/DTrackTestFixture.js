@@ -16,6 +16,11 @@ class DTrackTestFixture {
     });
   }
 
+  async getMajorVersion() {
+    const response = await this.axiosInstance.get('/api/version');
+    return Number.parseInt(response.data.version.split('.')[0], 10);
+  }
+
   async createProject(name, version, extraFields = {}) {
     try {
       const projectData = {
