@@ -174,7 +174,7 @@
       "type": "string",
       "required": false,
       "groupName": "baseSettings",
-      "helpMarkDown": "The Dependency Track API key. This is used to authenticate to Dependency Track. Required if Service Connection is not specified."
+      "helpMarkDown": "The Dependency Track API key. This is used to authenticate to Dependency Track. Required if Service Connection is not specified.\nWhen threshold checking is enabled, additionally granting the VIEW_VULNERABILITY and VIEW_POLICY_VIOLATION permissions lets the task recognize when Dependency Track's own metrics computation found nothing new to report and avoid waiting out the full polling timeout. This is optional - without it, the task falls back to its existing timeout behavior."
     },
     {
       "name": "dtrackURI",
@@ -318,6 +318,7 @@
     "PolicyViolationCount": "Current Policy Violation Count:\nFail: %s\nWarn:%s\nInfo: %s\nTotal: %s",
     "PollingFailed": "Polling Dependency Track for update Failed: %s",
     "PollingTimeoutExceeded": "Polling Dependency Track for update timed out after %s seconds.",
+    "MetricsUnchangedSinceUpload": "Metrics are unchanged since the last computation today. Dependency Track did not record a new metrics timestamp because this upload introduced no new or removed findings or policy violations - treating the current metrics as up to date.",
     "ProjectNotFound": "Unable to find Dependency Track project with name '%s' and version '%s'",
     "GetProjectUuidStarting": "Getting project id using name '%s' and version '%s'.",
     "MissingProjectInfoWhenAutoCreate": "Project name and version is required when auto creating project.",
