@@ -108,6 +108,7 @@ The following table outlines the minimum permissions required in Dependency-Trac
 | **Use thresholds** | `VIEW_PORTFOLIO` |
 | **Update project properties** | `PORTFOLIO_MANAGEMENT` |
 | **Add a new project version** (via the `AddProjectVersion` task) | `BOM_UPLOAD` + `PROJECT_CREATION_UPLOAD` + `PORTFOLIO_MANAGEMENT` |
+| **Avoid waiting out the full polling timeout when thresholds are used** *(optional)* | `VIEW_VULNERABILITY` + `VIEW_POLICY_VIOLATION` |
 
 ### Recommended Setup
 
@@ -117,6 +118,8 @@ BOM_UPLOAD + PROJECT_CREATION_UPLOAD + VIEW_PORTFOLIO
 ```
 
 Add `PORTFOLIO_MANAGEMENT` if you need to set project descriptions, tags, or other properties.
+
+Add `VIEW_VULNERABILITY` + `VIEW_POLICY_VIOLATION` if you use thresholds and want the task to recognize when Dependency Track found nothing new to report for a re-upload, instead of waiting out the full `dtrackPollingTimeoutSeconds`. This is optional - without it the task falls back to its normal timeout behavior.
 
 ---
 
