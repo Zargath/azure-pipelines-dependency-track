@@ -6,6 +6,7 @@
   "scripts": {
     "test": "jest --config=jest.unit.config.js",
     "test:integration": "jest --config=jest.integration.config.js",
+    "test:e2e": "npm run build && jest --config=jest.e2e.config.js",
     "build": "babel src --out-dir dist --copy-files"
   },
   "author": "",

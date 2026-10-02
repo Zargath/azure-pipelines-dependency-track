@@ -124,12 +124,15 @@ if (process.env.NODE_ENV !== 'test') {
   run().then(
     () => {
       console.log(localize('TaskSucceed'));
-      process.exit(0);
+      // Not process.exit(): it can truncate a pending stdout write (the
+      // ##vso[...] logging command azure-pipelines-task-lib just wrote),
+      // which breaks continueOnError. Let Node drain and exit naturally.
+      process.exitCode = 0;
     },
     err => {
       console.error(localize('TaskFailed', err));
       tl.setResult(tl.TaskResult.Failed, err.message);
-      process.exit(1);
+      process.exitCode = 1;
     }
   );
 }
