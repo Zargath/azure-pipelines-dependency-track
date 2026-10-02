@@ -94,6 +94,7 @@ Provide **one** of the following:
 | `dtrackParentProjName` | Parent project name (with optional auto-create) |
 | `dtrackParentProjVersion` | Parent project version (with optional auto-create) |
 | `dtrackIsLatest` | Sets the project as the latest version. Defaults to false. |
+| `dtrackPollingTimeoutSeconds` | Maximum time, in seconds, to wait for Dependency Track to finish processing an uploaded BOM or to refresh project metrics before failing the task. Defaults to `300` (5 minutes). |
 
 ---
 
