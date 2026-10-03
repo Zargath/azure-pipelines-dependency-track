@@ -3,6 +3,11 @@ import axios from 'axios'
 
 class DTrackClient {
   constructor(url, apiKey, caFile) {
+    const parsedUrl = new URL(url);
+    if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+      throw new Error(`Invalid Dependency-Track URL protocol: ${parsedUrl.protocol}. Only http(s) is allowed.`);
+    }
+
     this.baseUrl = url;
     this.apiKey = apiKey;
     this.caFile = caFile;
