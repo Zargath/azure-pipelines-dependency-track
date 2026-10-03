@@ -18,6 +18,39 @@ class DtrackManager {
     }
   }
 
+  // Silent counterpart to getProjetUUID: returns null instead of throwing when the
+  // project doesn't exist yet (the common, expected case for a not-yet-created project),
+  // so it's safe to use as a speculative "does this already exist" check.
+  async tryGetProjetUUID(name, version) {
+    try {
+      return (await this.dtrackClient.getProjectUUID(name, version)) || null;
+    }
+    catch {
+      return null;
+    }
+  }
+
+  async getFindingsViolationsKey(projectId) {
+    const [findings, violations] = await Promise.all([
+      this.dtrackClient.getFindingsAsync(projectId),
+      this.dtrackClient.getViolationsAsync(projectId)
+    ]);
+    return Utils.computeFindingsViolationsKey(findings, violations);
+  }
+
+  // Best-effort counterpart to getFindingsViolationsKey: this check is purely an
+  // optional improvement over the existing timeout, so any failure (e.g. the configured
+  // API key lacks VIEW_VULNERABILITY/VIEW_POLICY_VIOLATION) must fall back to that
+  // existing behavior silently rather than surface a new, unrelated error.
+  async tryGetFindingsViolationsKey(projectId) {
+    try {
+      return await this.getFindingsViolationsKey(projectId);
+    }
+    catch {
+      return undefined;
+    }
+  }
+
   async getProjectInfo(projectId) {
     const info = await this.dtrackClient.getProjectInfo(projectId);
     return info;
@@ -157,7 +190,13 @@ class DtrackManager {
     }
   }
 
-  async waitMetricsRefresh(projectId) {
+  // beforeFindingsViolationsKey is optional: when provided (the caller already knew the
+  // project existed before this upload), a timeout is given one last chance to recognize
+  // a legitimate case Dependency Track's own metrics dedup optimization produces - the
+  // upload genuinely introduced no new/removed findings or policy violations, so DT never
+  // writes a new PROJECTMETRICS row and lastOccurrence can never advance. See
+  // https://github.com/DependencyTrack/dependency-track - UPDATE_PROJECT_METRICS for why.
+  async waitMetricsRefresh(projectId, beforeFindingsViolationsKey) {
     const startTime = Date.now();
     const timeoutMs = this.pollingTimeoutSeconds * 1000;
     const lastBomImport = new Date((await this.getProjectInfo(projectId)).lastBomImport);
@@ -174,6 +213,13 @@ class DtrackManager {
       }
 
       if ((Date.now() - startTime) >= timeoutMs) {
+        if (beforeFindingsViolationsKey !== undefined) {
+          const afterKey = await this.tryGetFindingsViolationsKey(projectId);
+          if (afterKey !== undefined && afterKey === beforeFindingsViolationsKey) {
+            console.log(localize('MetricsUnchangedSinceUpload'));
+            return;
+          }
+        }
         throw new Error(localize('PollingTimeoutExceeded', this.pollingTimeoutSeconds));
       }
     } while (lastOccurrence < lastBomImport)

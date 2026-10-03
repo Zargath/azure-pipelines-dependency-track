@@ -38,10 +38,39 @@ const run = async () => {
   
   const client = new DTrackClient(params.dtrackURI, params.dtrackAPIKey, caFile);
   const dtrackManager = new DTrackManager(client, Number.parseInt(params.pollingTimeoutSeconds));
-  
+
+  const thresholdExpert = new ThresholdExpert(
+    Number.parseInt(params.thresholdCritical),
+    Number.parseInt(params.thresholdHigh),
+    Number.parseInt(params.thresholdMedium),
+    Number.parseInt(params.thresholdLow),
+    Number.parseInt(params.thresholdUnassigned),
+    Number.parseInt(params.thresholdpolicyViolationsFail),
+    Number.parseInt(params.thresholdpolicyViolationsWarn),
+    Number.parseInt(params.thresholdpolicyViolationsInfo),
+    Number.parseInt(params.thresholdpolicyViolationsTotal));
+
+  const hasThresholdAction = (params.thresholdAction === 'warn' || params.thresholdAction === 'error') && thresholdExpert.areThresholdsValidated();
+
+  // Snapshot the project's current findings/violations before uploading, while we still know
+  // whether it already existed. waitMetricsRefresh uses this to tell a legitimately unchanged
+  // re-upload (Dependency Track's own metrics dedup optimization means lastOccurrence can
+  // never advance for one) apart from a genuine stall, without needing a separate lookup after
+  // the fact - by then the project's data has already moved on.
+  let beforeFindingsViolationsKey;
+  if (hasThresholdAction) {
+    let existingProjectId = params.projectId;
+    if (!existingProjectId && params.projectName && params.projectVersion) {
+      existingProjectId = await dtrackManager.tryGetProjetUUID(params.projectName, params.projectVersion);
+    }
+    if (existingProjectId) {
+      beforeFindingsViolationsKey = await dtrackManager.tryGetFindingsViolationsKey(existingProjectId);
+    }
+  }
+
   let projectId = params.projectId;
   let token = undefined;
-  
+
   if (params.isProjectAutoCreated) {
     if (params.parentProjectName) {
       console.log(localize('BOMUploadAndCreateChildStarting', params.dtrackURI, params.projectName, params.projectVersion, params.parentProjectName, params.parentProjectVersion));
@@ -67,18 +96,6 @@ const run = async () => {
 
   console.log(localize('BOMUploadSucceed', token));
 
-  const thresholdExpert = new ThresholdExpert(
-    Number.parseInt(params.thresholdCritical),
-    Number.parseInt(params.thresholdHigh),
-    Number.parseInt(params.thresholdMedium),
-    Number.parseInt(params.thresholdLow),
-    Number.parseInt(params.thresholdUnassigned),
-    Number.parseInt(params.thresholdpolicyViolationsFail),
-    Number.parseInt(params.thresholdpolicyViolationsWarn),
-    Number.parseInt(params.thresholdpolicyViolationsInfo),
-    Number.parseInt(params.thresholdpolicyViolationsTotal));
-
-  const hasThresholdAction = (params.thresholdAction === 'warn' || params.thresholdAction === 'error') && thresholdExpert.areThresholdsValidated();
   const hasProjectUpdate = !!(params.projectDescription || params.projectClassifier || params.projectSwidTagId || params.projectGroup ||
                             (params.projectTags && params.projectTags.length > 0) || typeof params.isLatest === 'boolean');
 
@@ -95,7 +112,7 @@ const run = async () => {
   if (hasThresholdAction) {
 
     console.log(localize('RetrievingMetrics'));
-    await dtrackManager.waitMetricsRefresh(projectId);
+    await dtrackManager.waitMetricsRefresh(projectId, beforeFindingsViolationsKey);
     const metrics = await dtrackManager.getProjectMetricsAsync(projectId);
 
     console.log(localize('VulnCount', metrics.critical, metrics.high, metrics.medium, metrics.low, metrics.unassigned, metrics.suppressed));

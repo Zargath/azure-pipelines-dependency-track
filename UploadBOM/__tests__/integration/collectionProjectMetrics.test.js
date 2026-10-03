@@ -13,16 +13,26 @@ describe('Collection project metrics - validating DependencyTrack/dependency-tra
   const BASE_URL = 'https://localhost:8080';
   let client;
   let dTrackTestFixture;
+  let isV4;
 
-  beforeAll(() => {
+  beforeAll(async () => {
     const apiKey = getTestApiKey();
     const caFilePath = path.join(__dirname, '../../../test-environment/certs', 'apiserver.crt');
     const caFile = fs.existsSync(caFilePath) ? fs.readFileSync(caFilePath) : undefined;
     client = new DTrackClient(BASE_URL, apiKey, caFile);
     dTrackTestFixture = new DTrackTestFixture(BASE_URL, apiKey, caFile);
+    isV4 = (await dTrackTestFixture.getMajorVersion()) < 5;
   });
 
   it('returns HTTP 200 with lastOccurrence/firstOccurrence omitted for a collection project whose children have no computed metrics', async () => {
+    if (isV4) {
+      // DT 5.x-specific: on-demand metrics aggregation for collection projects (the
+      // behavior DependencyTrack/dependency-track#7421 is about) doesn't exist on v4 -
+      // the endpoint returns a genuinely empty body there instead, which is already
+      // covered by the pre-existing epoch-fallback behavior this test isn't about.
+      return;
+    }
+
     const parentId = await dTrackTestFixture.createProject(
       generateUniqueName('collection-parent'),
       '1.0.0',
@@ -44,6 +54,10 @@ describe('Collection project metrics - validating DependencyTrack/dependency-tra
   });
 
   it('documents the actual (buggy) behavior of waitMetricsRefresh against this scenario', async () => {
+    if (isV4) {
+      return;
+    }
+
     const parentId = await dTrackTestFixture.createProject(
       generateUniqueName('collection-parent'),
       '1.0.0',

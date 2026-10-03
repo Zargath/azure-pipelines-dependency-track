@@ -94,6 +94,7 @@ Provide **one** of the following:
 | `dtrackParentProjName` | Parent project name (with optional auto-create) |
 | `dtrackParentProjVersion` | Parent project version (with optional auto-create) |
 | `dtrackIsLatest` | Sets the project as the latest version. Defaults to false. |
+| `dtrackPollingTimeoutSeconds` | Maximum time, in seconds, to wait for Dependency Track to finish processing an uploaded BOM or to refresh project metrics before failing the task. Defaults to `300` (5 minutes). |
 
 ---
 
@@ -108,6 +109,7 @@ The following table outlines the minimum permissions required in Dependency-Trac
 | **Use thresholds** | `VIEW_PORTFOLIO` |
 | **Update project properties** | `PORTFOLIO_MANAGEMENT` |
 | **Add a new project version** (via the `AddProjectVersion` task) | `BOM_UPLOAD` + `PROJECT_CREATION_UPLOAD` + `PORTFOLIO_MANAGEMENT` |
+| **Avoid waiting out the full polling timeout when thresholds are used** *(optional)* | `VIEW_VULNERABILITY` + `VIEW_POLICY_VIOLATION` |
 
 ### Recommended Setup
 
@@ -117,6 +119,8 @@ BOM_UPLOAD + PROJECT_CREATION_UPLOAD + VIEW_PORTFOLIO
 ```
 
 Add `PORTFOLIO_MANAGEMENT` if you need to set project descriptions, tags, or other properties.
+
+Add `VIEW_VULNERABILITY` + `VIEW_POLICY_VIOLATION` if you use thresholds and want the task to recognize when Dependency Track found nothing new to report for a re-upload, instead of waiting out the full `dtrackPollingTimeoutSeconds`. This is optional - without it the task falls back to its normal timeout behavior.
 
 ---
 

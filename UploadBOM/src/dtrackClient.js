@@ -167,6 +167,32 @@ class DTrackClient {
     }
   }
 
+  async getFindingsAsync(projId) {
+    try {
+      const response = await this.axiosInstance.get(`/api/v1/finding/project/${projId}`);
+
+      if (response.status === 200) {
+        return response.data;
+      }
+      throw new Error(`Unexpected status code: ${response.status}`);
+    } catch (error) {
+      throw { error, response: error.response };
+    }
+  }
+
+  async getViolationsAsync(projId) {
+    try {
+      const response = await this.axiosInstance.get(`/api/v1/violation/project/${projId}`);
+
+      if (response.status === 200) {
+        return response.data;
+      }
+      throw new Error(`Unexpected status code: ${response.status}`);
+    } catch (error) {
+      throw { error, response: error.response };
+    }
+  }
+
   async updateProject(projId, description, classifier, swidTagId, group, tags, isLatest) {
     const data = {
       "description": description,
