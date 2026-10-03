@@ -1,8 +1,8 @@
 const path = require('path');
 const fs = require('fs');
+const mockTaskLib = require('./mocks/mockTaskLib');
 const { getTestApiKey, generateUniqueName, waitForBomProcessing, waitForMetricsRefresh } = require('./test-utils');
 const DTrackClient = require('../../src/dtrackClient').default;
-const mockTaskLib = require('./mocks/mockTaskLib');
 const DTrackTestFixture = require('./fixtures/DTrackTestFixture');
 
 // Import the run function from task.js

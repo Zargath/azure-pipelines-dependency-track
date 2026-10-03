@@ -1,3 +1,4 @@
+import * as tl from "azure-pipelines-task-lib/task"
 import axios from 'axios'
 
 class DTrackClient {
@@ -14,6 +15,23 @@ class DTrackClient {
       },
       ...(this.caFile ? { httpsAgent: new (require('https').Agent)({ ca: this.caFile }) } : {}),
     });
+
+    // Log every Dependency Track API response (only visible when the pipeline has
+    // system.debug: true set) - covers every call below with no per-method boilerplate.
+    this.axiosInstance.interceptors.response.use(
+      (response) => {
+        tl.debug(`DTrack API ${response.config.method.toUpperCase()} ${response.config.url} -> ${response.status} ${JSON.stringify(response.data)}`);
+        return response;
+      },
+      (error) => {
+        if (error.response) {
+          tl.debug(`DTrack API ${error.config.method.toUpperCase()} ${error.config.url} -> ${error.response.status} ${JSON.stringify(error.response.data)}`);
+        } else {
+          tl.debug(`DTrack API ${error.config?.method?.toUpperCase()} ${error.config?.url} -> request failed: ${error.message}`);
+        }
+        return Promise.reject(error);
+      }
+    );
   }
 
   uploadBomAsync(projId, bom) {

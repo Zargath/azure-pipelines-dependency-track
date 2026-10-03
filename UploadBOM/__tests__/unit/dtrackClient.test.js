@@ -7,7 +7,12 @@ jest.mock('axios', () => ({
     post: jest.fn(),
     patch: jest.fn(),
     put: jest.fn(),
+    interceptors: { response: { use: jest.fn() } },
   }))
+}));
+
+jest.mock('azure-pipelines-task-lib/task', () => ({
+  debug: jest.fn(),
 }));
 
 describe('DTrackClient', () => {
@@ -21,6 +26,7 @@ describe('DTrackClient', () => {
       post: jest.fn(),
       patch: jest.fn(),
       put: jest.fn(),
+      interceptors: { response: { use: jest.fn() } },
     };
     
     axios.create.mockReturnValue(mockAxiosInstance);
