@@ -14,6 +14,16 @@ jest.mock('../../src/utils', () => ({
   }
 }));
 
+jest.mock('../../src/logger', () => ({
+  __esModule: true,
+  default: {
+    log: jest.fn(),
+    debug: jest.fn(),
+    warning: jest.fn(),
+    error: jest.fn()
+  }
+}));
+
 describe('DtrackManager', () => {
   let dtrackManager;
   let mockDtrackClient;

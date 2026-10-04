@@ -7,6 +7,7 @@ import DTrackManager from './dtrackManager.js'
 import { localize } from './localization.js'
 import TaskParametersUtility from "./taskParametersUtility.js"
 import ThresholdExpert from "./thresholdExpert.js"
+import Logger from './logger.js'
 
 function loadFile(path, errorKey) {
   if (!tl.stats(path).isFile()) {
@@ -29,11 +30,11 @@ const run = async () => {
 
   let caFile;
   if (tl.stats(params.caFilePath).isFile()) {
-    console.log(localize('ReadingCA', params.caFilePath));
+    Logger.log(localize('ReadingCA', params.caFilePath));
     caFile = loadFile(params.caFilePath, 'UnableToReadCA');
   }
 
-  console.log(localize('ReadingBom', params.bomFilePath));
+  Logger.log(localize('ReadingBom', params.bomFilePath));
   const bom = loadFile(params.bomFilePath, 'UnableToReadBom');
   
   const client = new DTrackClient(params.dtrackURI, params.dtrackAPIKey, caFile);
@@ -44,28 +45,28 @@ const run = async () => {
   
   if (params.isProjectAutoCreated) {
     if (params.parentProjectName) {
-      console.log(localize('BOMUploadAndCreateChildStarting', params.dtrackURI, params.projectName, params.projectVersion, params.parentProjectName, params.parentProjectVersion));
+      Logger.log(localize('BOMUploadAndCreateChildStarting', params.dtrackURI, params.projectName, params.projectVersion, params.parentProjectName, params.parentProjectVersion));
       token = await dtrackManager.uploadBomAndCreateChildProjectAsync(params.projectName, params.projectVersion, params.parentProjectName, params.parentProjectVersion, params.isLatest, bom);
     }
     else {
-      console.log(localize('BOMUploadAndCreateStarting', params.dtrackURI, params.projectName, params.projectVersion));
+      Logger.log(localize('BOMUploadAndCreateStarting', params.dtrackURI, params.projectName, params.projectVersion));
       token = await dtrackManager.uploadBomAndCreateProjectAsync(params.projectName, params.projectVersion, params.isLatest, bom);
     }
 
-    console.log(localize('GetProjectUuidStarting', params.projectName, params.projectVersion));
+    Logger.log(localize('GetProjectUuidStarting', params.projectName, params.projectVersion));
     projectId = await dtrackManager.getProjetUUID(params.projectName, params.projectVersion);
   }
   else {
     if (!projectId) {
-      console.log(localize('GetProjectUuidStarting', params.projectName, params.projectVersion));
+      Logger.log(localize('GetProjectUuidStarting', params.projectName, params.projectVersion));
       projectId = await dtrackManager.getProjetUUID(params.projectName, params.projectVersion);
     }
 
-    console.log(localize('BOMUploadWithIdStarting', projectId, params.dtrackURI));
+    Logger.log(localize('BOMUploadWithIdStarting', projectId, params.dtrackURI));
     token = await dtrackManager.uploadBomAsync(projectId, bom);
   }
 
-  console.log(localize('BOMUploadSucceed', token));
+  Logger.log(localize('BOMUploadSucceed', token));
 
   const thresholdExpert = new ThresholdExpert(
     Number.parseInt(params.thresholdCritical),
@@ -86,7 +87,7 @@ const run = async () => {
   // (e.g. swidTagId) from BOM metadata during async processing, which would overwrite a PATCH
   // applied before processing completes.
   if (hasThresholdAction || hasProjectUpdate) {
-    console.log(localize('ProcessingBOM'));
+    Logger.log(localize('ProcessingBOM'));
     await dtrackManager.waitEventProcessing(token);
   }
 
@@ -94,12 +95,12 @@ const run = async () => {
 
   if (hasThresholdAction) {
 
-    console.log(localize('RetrievingMetrics'));
+    Logger.log(localize('RetrievingMetrics'));
     await dtrackManager.waitMetricsRefresh(projectId);
     const metrics = await dtrackManager.getProjectMetricsAsync(projectId);
 
-    console.log(localize('VulnCount', metrics.critical, metrics.high, metrics.medium, metrics.low, metrics.unassigned, metrics.suppressed));
-    console.log(localize('PolicyViolationCount', metrics.policyViolationsFail, metrics.policyViolationsWarn, metrics.policyViolationsInfo, metrics.policyViolationsTotal));
+    Logger.log(localize('VulnCount', metrics.critical, metrics.high, metrics.medium, metrics.low, metrics.unassigned, metrics.suppressed));
+    Logger.log(localize('PolicyViolationCount', metrics.policyViolationsFail, metrics.policyViolationsWarn, metrics.policyViolationsInfo, metrics.policyViolationsTotal));
 
     try {
       thresholdExpert.validateThresholds(metrics)
@@ -123,14 +124,14 @@ const run = async () => {
 if (process.env.NODE_ENV !== 'test') {
   run().then(
     () => {
-      console.log(localize('TaskSucceed'));
+      Logger.log(localize('TaskSucceed'));
       // Not process.exit(): it can truncate a pending stdout write (the
       // ##vso[...] logging command azure-pipelines-task-lib just wrote),
       // which breaks continueOnError. Let Node drain and exit naturally.
       process.exitCode = 0;
     },
     err => {
-      console.error(localize('TaskFailed', err));
+      Logger.error(localize('TaskFailed', err));
       tl.setResult(tl.TaskResult.Failed, err.message);
       process.exitCode = 1;
     }

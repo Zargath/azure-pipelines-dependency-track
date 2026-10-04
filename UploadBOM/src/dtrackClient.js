@@ -1,5 +1,5 @@
-import * as tl from "azure-pipelines-task-lib/task"
 import axios from 'axios'
+import Logger from './logger.js'
 
 class DTrackClient {
   constructor(url, apiKey, caFile) {
@@ -20,14 +20,14 @@ class DTrackClient {
     // system.debug: true set) - covers every call below with no per-method boilerplate.
     this.axiosInstance.interceptors.response.use(
       (response) => {
-        tl.debug(`DTrack API ${response.config.method.toUpperCase()} ${response.config.url} -> ${response.status} ${JSON.stringify(response.data)}`);
+        Logger.debug(`DTrack API ${response.config.method.toUpperCase()} ${response.config.url} -> ${response.status} ${JSON.stringify(response.data)}`);
         return response;
       },
       (error) => {
         if (error.response) {
-          tl.debug(`DTrack API ${error.config.method.toUpperCase()} ${error.config.url} -> ${error.response.status} ${JSON.stringify(error.response.data)}`);
+          Logger.debug(`DTrack API ${error.config.method.toUpperCase()} ${error.config.url} -> ${error.response.status} ${JSON.stringify(error.response.data)}`);
         } else {
-          tl.debug(`DTrack API ${error.config?.method?.toUpperCase()} ${error.config?.url} -> request failed: ${error.message}`);
+          Logger.debug(`DTrack API ${error.config?.method?.toUpperCase()} ${error.config?.url} -> request failed: ${error.message}`);
         }
         return Promise.reject(error);
       }

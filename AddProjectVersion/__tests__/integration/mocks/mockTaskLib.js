@@ -124,6 +124,12 @@ const mockTaskLib = {
         state.resourcePath = path;
     },
 
+    debug: (message) => {},
+
+    warning: (message) => {},
+
+    error: (message) => {},
+
     setResult: (result, message) => {
         state.results.push({ result, message });
     },

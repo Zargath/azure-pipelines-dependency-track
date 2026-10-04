@@ -6,6 +6,7 @@ import DTrackClient from './dtrackClient.js'
 import DTrackManager from './dtrackManager.js'
 import { localize } from './localization.js'
 import TaskParametersUtility from "./taskParametersUtility.js"
+import Logger from './logger.js'
 
 function loadFile(path, errorKey) {
   if (!tl.stats(path).isFile()) {
@@ -28,18 +29,18 @@ const run = async () => {
 
   let caFile;
   if (tl.stats(params.caFilePath).isFile()) {
-    console.log(localize('ReadingCA', params.caFilePath));
+    Logger.log(localize('ReadingCA', params.caFilePath));
     caFile = loadFile(params.caFilePath, 'UnableToReadCA');
   }
 
   const client = new DTrackClient(params.dtrackURI, params.dtrackAPIKey, caFile);
   const dtrackManager = new DTrackManager(client);
 
-  console.log(localize('GetProjectUuidStarting', params.projectName, params.projectVersion));
+  Logger.log(localize('GetProjectUuidStarting', params.projectName, params.projectVersion));
   const existingProjectId = await dtrackManager.tryGetProjectUUID(params.projectName, params.projectVersion);
 
   if (existingProjectId) {
-    console.log(localize('ProjectAlreadyExists', params.projectName, params.projectVersion, existingProjectId));
+    Logger.warning(localize('ProjectAlreadyExists', params.projectName, params.projectVersion, existingProjectId));
     return { projectId: existingProjectId, created: false };
   }
 
@@ -47,15 +48,15 @@ const run = async () => {
 
   if (!cloneResult) {
     if (params.sourceVersion) {
-      console.log(localize('SpecifiedSourceVersionNotFound', params.sourceVersion, params.projectName, params.projectVersion));
+      Logger.warning(localize('SpecifiedSourceVersionNotFound', params.sourceVersion, params.projectName, params.projectVersion));
     } else {
-      console.log(localize('NoPreviousVersionToAdd', params.projectName, params.projectVersion));
+      Logger.warning(localize('NoPreviousVersionToAdd', params.projectName, params.projectVersion));
     }
     return { projectId: null, created: false };
   }
 
   if (!cloneResult.created) {
-    console.log(localize('ProjectAlreadyExists', params.projectName, params.projectVersion, cloneResult.projectId));
+    Logger.warning(localize('ProjectAlreadyExists', params.projectName, params.projectVersion, cloneResult.projectId));
     return { projectId: cloneResult.projectId, created: false };
   }
 
@@ -67,7 +68,7 @@ if (process.env.NODE_ENV !== 'test') {
   run().then(
     (result) => {
       if (result.created) {
-        console.log(localize('TaskSucceed'));
+        Logger.log(localize('TaskSucceed'));
       } else {
         tl.setResult(tl.TaskResult.SucceededWithIssues, localize('TaskSucceededWithWarning'));
       }
@@ -75,7 +76,7 @@ if (process.env.NODE_ENV !== 'test') {
       process.exitCode = 0;
     },
     err => {
-      console.error(localize('TaskFailed', err));
+      Logger.error(localize('TaskFailed', err));
       tl.setResult(tl.TaskResult.Failed, err.message);
       process.exitCode = 1;
     }
