@@ -1,5 +1,6 @@
 import { localize } from './localization.js'
 import Utils from './utils.js'
+import Logger from './logger.js'
 
 class DtrackManager {
   constructor(dtrackClient, pollingTimeoutSeconds = 300) {
@@ -13,7 +14,7 @@ class DtrackManager {
       return projectId;
     }
     catch (err) {
-      console.log(Utils.getErrorMessage(err));
+      Logger.log(Utils.getErrorMessage(err));
       throw new Error(localize('ProjectNotFound', name, version));
     }
   }
@@ -34,7 +35,7 @@ class DtrackManager {
                               typeof isLatest === 'boolean';
 
       if (!hasUpdateParams) {
-        console.log(localize('NoProjectChanges'));
+        Logger.log(localize('NoProjectChanges'));
         return;
       }
 
@@ -77,11 +78,11 @@ class DtrackManager {
         }
       }
 
-      console.log(localize('CurrentProjectSettings'));
-      console.log(localize('projectSettings', projectId, projectInfo.name, projectInfo.version, projectInfo.description, projectInfo.classifier, projectInfo.swidTagId, projectInfo.group, JSON.stringify(projectInfo.tags), projectInfo.isLatest));
+      Logger.log(localize('CurrentProjectSettings'));
+      Logger.log(localize('projectSettings', projectId, projectInfo.name, projectInfo.version, projectInfo.description, projectInfo.classifier, projectInfo.swidTagId, projectInfo.group, JSON.stringify(projectInfo.tags), projectInfo.isLatest));
 
       if (Object.keys(updatedInfo).length === 0) {
-        console.log(localize('NoProjectChanges'));
+        Logger.log(localize('NoProjectChanges'));
         return;
       } else if (typeof isLatest === 'boolean') {
         // Force update of isLatest flag
@@ -93,11 +94,11 @@ class DtrackManager {
         updatedInfo.isLatest = projectInfo.isLatest;
       }
 
-      console.log(localize('UpdatingProject'));
+      Logger.log(localize('UpdatingProject'));
       const newSettings = await this.dtrackClient.updateProject(projectId, updatedInfo.description, updatedInfo.classifier, updatedInfo.swidTagId, updatedInfo.group, updatedInfo.tags, updatedInfo.isLatest);
 
-      console.log(localize('NewProjectSettings'));
-      console.log(localize('projectSettings', projectId, newSettings.name, newSettings.version, newSettings.description, newSettings.classifier, newSettings.swidTagId, newSettings.group, JSON.stringify(newSettings.tags), newSettings.isLatest, newSettings.active));
+      Logger.log(localize('NewProjectSettings'));
+      Logger.log(localize('projectSettings', projectId, newSettings.name, newSettings.version, newSettings.description, newSettings.classifier, newSettings.swidTagId, newSettings.group, JSON.stringify(newSettings.tags), newSettings.isLatest, newSettings.active));
 
     }
     catch (err) {
@@ -143,7 +144,7 @@ class DtrackManager {
 
     while (processing && (Date.now() - startTime) < timeoutMs) {
       await Utils.sleepAsync(2000);
-      console.log(localize('Polling'));
+      Logger.log(localize('Polling'));
       try {
         processing = await this.dtrackClient.pullProcessingStatusAsync(token);
       }
@@ -165,7 +166,7 @@ class DtrackManager {
 
     do {
       await Utils.sleepAsync(2000);
-      console.log(localize('Polling'));
+      Logger.log(localize('Polling'));
       try {
         lastOccurrence = await this.dtrackClient.getLastMetricCalculationDate(projectId);
       }
@@ -178,8 +179,8 @@ class DtrackManager {
       }
     } while (lastOccurrence < lastBomImport)
 
-    console.log(localize('LastBOMImport', lastBomImport));
-    console.log(localize('LastMetricUpdate', lastOccurrence));
+    Logger.log(localize('LastBOMImport', lastBomImport));
+    Logger.log(localize('LastMetricUpdate', lastOccurrence));
   }
 
   async getProjectMetricsAsync(projectId) {

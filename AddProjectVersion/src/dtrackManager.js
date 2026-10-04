@@ -1,5 +1,6 @@
 import { localize } from './localization.js'
 import Utils from './utils.js'
+import Logger from './logger.js'
 
 class DtrackManager {
   constructor(dtrackClient) {
@@ -35,7 +36,7 @@ class DtrackManager {
         return { projectId: sourceProject.uuid, created: false };
       }
 
-      console.log(localize('AddingVersion', sourceProject.name, sourceProject.version, newVersion));
+      Logger.log(localize('AddingVersion', sourceProject.name, sourceProject.version, newVersion));
 
       const majorVersion = await this.getDtrackMajorVersion();
       let newProjectId;
@@ -47,7 +48,7 @@ class DtrackManager {
         newProjectId = await this.tryGetProjectUUID(projectName, newVersion);
       }
 
-      console.log(localize('AddVersionSucceed', newProjectId));
+      Logger.log(localize('AddVersionSucceed', newProjectId));
       return { projectId: newProjectId, created: true };
     }
     catch (err) {
@@ -59,7 +60,7 @@ class DtrackManager {
     let processing = true;
     while (processing) {
       await Utils.sleepAsync(2000);
-      console.log(localize('Polling'));
+      Logger.log(localize('Polling'));
       try {
         processing = await this.dtrackClient.pullProcessingStatusAsync(token);
       }
