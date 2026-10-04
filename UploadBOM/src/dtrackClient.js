@@ -1,14 +1,22 @@
 import * as tl from "azure-pipelines-task-lib/task"
 import axios from 'axios'
 
+function validateDtrackUrl(value) {
+  let url;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error(`Invalid Dependency-Track URL: ${value}`);
+  }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+    throw new Error(`Invalid Dependency-Track URL protocol: ${url.protocol}. Only http(s) is allowed.`);
+  }
+  return url.toString();
+}
+
 class DTrackClient {
   constructor(url, apiKey, caFile) {
-    const parsedUrl = new URL(url);
-    if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
-      throw new Error(`Invalid Dependency-Track URL protocol: ${parsedUrl.protocol}. Only http(s) is allowed.`);
-    }
-
-    this.baseUrl = url;
+    this.baseUrl = validateDtrackUrl(url);
     this.apiKey = apiKey;
     this.caFile = caFile;
 
