@@ -125,7 +125,11 @@ const mockTaskLib = {
     },
 
     debug: (message) => {},
-    
+
+    warning: (message) => {},
+
+    error: (message) => {},
+
     setResult: (result, message) => {
         state.results.push({ result, message });
     },

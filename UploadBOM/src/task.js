@@ -130,7 +130,7 @@ if (process.env.NODE_ENV !== 'test') {
       process.exitCode = 0;
     },
     err => {
-      console.error(localize('TaskFailed', err));
+      tl.error(localize('TaskFailed', err));
       tl.setResult(tl.TaskResult.Failed, err.message);
       process.exitCode = 1;
     }

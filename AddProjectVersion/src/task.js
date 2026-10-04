@@ -39,7 +39,7 @@ const run = async () => {
   const existingProjectId = await dtrackManager.tryGetProjectUUID(params.projectName, params.projectVersion);
 
   if (existingProjectId) {
-    console.log(localize('ProjectAlreadyExists', params.projectName, params.projectVersion, existingProjectId));
+    tl.warning(localize('ProjectAlreadyExists', params.projectName, params.projectVersion, existingProjectId));
     return { projectId: existingProjectId, created: false };
   }
 
@@ -47,15 +47,15 @@ const run = async () => {
 
   if (!cloneResult) {
     if (params.sourceVersion) {
-      console.log(localize('SpecifiedSourceVersionNotFound', params.sourceVersion, params.projectName, params.projectVersion));
+      tl.warning(localize('SpecifiedSourceVersionNotFound', params.sourceVersion, params.projectName, params.projectVersion));
     } else {
-      console.log(localize('NoPreviousVersionToAdd', params.projectName, params.projectVersion));
+      tl.warning(localize('NoPreviousVersionToAdd', params.projectName, params.projectVersion));
     }
     return { projectId: null, created: false };
   }
 
   if (!cloneResult.created) {
-    console.log(localize('ProjectAlreadyExists', params.projectName, params.projectVersion, cloneResult.projectId));
+    tl.warning(localize('ProjectAlreadyExists', params.projectName, params.projectVersion, cloneResult.projectId));
     return { projectId: cloneResult.projectId, created: false };
   }
 
@@ -75,7 +75,7 @@ if (process.env.NODE_ENV !== 'test') {
       process.exitCode = 0;
     },
     err => {
-      console.error(localize('TaskFailed', err));
+      tl.error(localize('TaskFailed', err));
       tl.setResult(tl.TaskResult.Failed, err.message);
       process.exitCode = 1;
     }
