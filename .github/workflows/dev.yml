@@ -43,9 +43,19 @@ jobs:
         npm run build
       working-directory: AddProjectVersion
 
+    - name: Run Unit Tests
+      run: npm test
+      working-directory: AddProjectVersion
+
     - name: Prune dev dependencies
       run: npm prune --production
       working-directory: AddProjectVersion
+
+    - name: Upload Coverage Report
+      uses: actions/upload-artifact@v7
+      with:
+        name: Coverage-Report-AddProjectVersion
+        path: AddProjectVersion/coverage
 
     - name: Package task
       if: ${{ ! startsWith(github.head_ref, 'dependabot/') }}
