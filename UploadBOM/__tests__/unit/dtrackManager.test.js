@@ -1,18 +1,26 @@
 import DtrackManager from '../../src/dtrackManager';
 import { localize } from '../../src/localization';
+import Utils from '../../src/utils';
+import Logger from '../../src/logger';
 
 // Mock dependencies
 jest.mock('../../src/localization', () => ({
   localize: jest.fn((key, ...params) => `${key}: ${params.join(' ')}`)
 }));
 
-jest.mock('../../src/utils', () => ({
-  __esModule: true,
-  default: {
-    getErrorMessage: jest.fn(err => err.message || String(err)),
-    sleepAsync: jest.fn(() => Promise.resolve())
-  }
-}));
+jest.mock('../../src/utils', () => {
+  const actual = jest.requireActual('../../src/utils').default;
+  return {
+    __esModule: true,
+    default: {
+      getErrorMessage: jest.fn(err => err.message || String(err)),
+      sleepAsync: jest.fn(() => Promise.resolve()),
+      // Real comparison logic (already covered by utils.test.js), not a per-call stub: keyed off
+      // the actual version/minVersion arguments, so callers don't need to guess call order.
+      isVersionAtLeast: jest.fn(actual.isVersionAtLeast)
+    }
+  };
+});
 
 jest.mock('../../src/logger', () => ({
   __esModule: true,
@@ -39,7 +47,8 @@ describe('DtrackManager', () => {
       uploadBomAndCreateChildProjectAsync: jest.fn(),
       pullProcessingStatusAsync: jest.fn(),
       getLastMetricCalculationDate: jest.fn(),
-      getProjectMetricsAsync: jest.fn()
+      getProjectMetricsAsync: jest.fn(),
+      getVersion: jest.fn()
     };
 
     dtrackManager = new DtrackManager(mockDtrackClient);
@@ -232,6 +241,36 @@ describe('DtrackManager', () => {
       await expect(dtrackManager.waitEventProcessing('token123'))
         .rejects
         .toThrow('PollingFailed: network error');
+    });
+  });
+
+  describe('shouldWaitForMetricsRefresh', () => {
+    it('should return true and not warn when the server predates the dedup-skip bug', async () => {
+      mockDtrackClient.getVersion.mockResolvedValue('5.0.5');
+
+      await expect(dtrackManager.shouldWaitForMetricsRefresh()).resolves.toBe(true);
+      expect(Logger.warning).not.toHaveBeenCalled();
+    });
+
+    it('should return true and warn when the server has the dedup-skip bug but not the fix', async () => {
+      mockDtrackClient.getVersion.mockResolvedValue('5.2.0');
+
+      await expect(dtrackManager.shouldWaitForMetricsRefresh()).resolves.toBe(true);
+      expect(Logger.warning).toHaveBeenCalledTimes(1);
+    });
+
+    it('should return false and not warn when the server has the fix', async () => {
+      mockDtrackClient.getVersion.mockResolvedValue('5.3.0-SNAPSHOT');
+
+      await expect(dtrackManager.shouldWaitForMetricsRefresh()).resolves.toBe(false);
+      expect(Logger.warning).not.toHaveBeenCalled();
+    });
+
+    it('should return true and not warn when the version check fails', async () => {
+      mockDtrackClient.getVersion.mockRejectedValue(new Error('network error'));
+
+      await expect(dtrackManager.shouldWaitForMetricsRefresh()).resolves.toBe(true);
+      expect(Logger.warning).not.toHaveBeenCalled();
     });
   });
 

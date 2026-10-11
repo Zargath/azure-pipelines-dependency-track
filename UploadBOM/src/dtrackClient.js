@@ -154,6 +154,19 @@ class DTrackClient {
     }
   }
 
+  async getVersion() {
+    try {
+      const response = await this.axiosInstance.get('/api/version');
+
+      if (response.status === 200) {
+        return response.data.version;
+      }
+      throw new Error(`Unexpected status code: ${response.status}`);
+    } catch (error) {
+      throw { error, response: error.response };
+    }
+  }
+
   async getProjectInfo(projId) {
     try {
       const response = await this.axiosInstance.get(`/api/v1/project/${projId}`);
