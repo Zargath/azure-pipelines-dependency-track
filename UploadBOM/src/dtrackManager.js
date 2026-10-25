@@ -158,6 +158,33 @@ class DtrackManager {
     }
   }
 
+  static FIRST_SERVER_VERSION_WITH_METRICS_DEDUP_BUG = '5.1.0';
+  static MIN_SERVER_VERSION_WITH_TOKEN_FIX = '5.2.1';
+
+  async shouldWaitForMetricsRefresh() {
+    let version;
+    try {
+      version = await this.dtrackClient.getVersion();
+    }
+    catch (err) {
+      Logger.log(Utils.getErrorMessage(err));
+      return true; // Unknown version - fall back to the safe, existing wait.
+    }
+
+    if (Utils.isVersionAtLeast(version, DtrackManager.MIN_SERVER_VERSION_WITH_TOKEN_FIX)) {
+      return false;
+    }
+
+    if (Utils.isVersionAtLeast(version, DtrackManager.FIRST_SERVER_VERSION_WITH_METRICS_DEDUP_BUG)) {
+      Logger.warning(localize(
+        'MetricsDedupBugWarning',
+        DtrackManager.FIRST_SERVER_VERSION_WITH_METRICS_DEDUP_BUG,
+        DtrackManager.MIN_SERVER_VERSION_WITH_TOKEN_FIX));
+    }
+
+    return true;
+  }
+
   async waitMetricsRefresh(projectId) {
     const startTime = Date.now();
     const timeoutMs = this.pollingTimeoutSeconds * 1000;

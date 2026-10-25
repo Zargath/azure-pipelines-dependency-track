@@ -95,8 +95,10 @@ const run = async () => {
 
   if (hasThresholdAction) {
 
-    Logger.log(localize('RetrievingMetrics'));
-    await dtrackManager.waitMetricsRefresh(projectId);
+    if (await dtrackManager.shouldWaitForMetricsRefresh()) {
+      Logger.log(localize('RetrievingMetrics'));
+      await dtrackManager.waitMetricsRefresh(projectId);
+    }
     const metrics = await dtrackManager.getProjectMetricsAsync(projectId);
 
     Logger.log(localize('VulnCount', metrics.critical, metrics.high, metrics.medium, metrics.low, metrics.unassigned, metrics.suppressed));

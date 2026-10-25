@@ -99,6 +99,21 @@ describe('DTrackClient', () => {
     expect(mockAxiosInstance.get).toHaveBeenCalledWith(`/api/v1/event/token/${token}`);
   });
 
+  it('should get the server version successfully', async () => {
+    // Arrange
+    mockAxiosInstance.get.mockResolvedValue({
+      status: 200,
+      data: { version: '5.3.0-SNAPSHOT' }
+    });
+
+    // Act
+    const result = await client.getVersion();
+
+    // Assert
+    expect(result).toEqual('5.3.0-SNAPSHOT');
+    expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/version');
+  });
+
   it('should get project metrics successfully', async () => {
     // Arrange
     const projectId = '123e4567-e89b-12d3-a456-426614174000';
