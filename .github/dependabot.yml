@@ -1,29 +1,36 @@
 version: 2
 updates:
-  # Enable version updates for npm (root package.json)
+  # npm (root, UploadBOM, AddProjectVersion): one grouped PR for minor/patch updates
   - package-ecosystem: "npm"
-    directory: "/"
+    directories:
+      - "/"
+      - "/UploadBOM"
+      - "/AddProjectVersion"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
+    cooldown:
+      default-days: 1
+    groups:
+      npm-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
-  # Enable version updates for npm (UploadBOM package.json)
-  - package-ecosystem: "npm"
-    directory: "/UploadBOM"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
-
-  # Enable version updates for npm (AddProjectVersion package.json)
-  - package-ecosystem: "npm"
-    directory: "/AddProjectVersion"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
-
-  # Enable version updates for GitHub Actions
+  # GitHub Actions: one grouped PR for minor/patch updates
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
+    cooldown:
+      default-days: 1
+    groups:
+      actions-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
