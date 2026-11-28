@@ -31,6 +31,9 @@ jobs:
         with:
           node-version: 20.x
 
+      - name: Set up Docker Compose
+        uses: docker/setup-compose-action@v2
+
       - name: Generate certificates
         run: bash test-environment/generate-certs.sh
 
