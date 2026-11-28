@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Configuration
-BASE_URL="https://localhost:8080"
+BASE_URL="${DTRACK_URL:-https://localhost:8080}"
 INITIAL_PASSWORD="admin"
 NEW_PASSWORD="NewSecurePassword123!"
 MAX_HEALTH_CHECK_RETRIES=30
@@ -261,6 +261,7 @@ start_dependency_track() {
 
   # Create data directory if it doesn't exist
   mkdir -p "${DATA_DIR}"
+  chmod 777 "${DATA_DIR}"
 
   # v4 only: generate dummy NIST files to skip NVD feed download on startup
   if [[ "$DTRACK_MAJOR_VERSION" == "4" ]]; then
@@ -284,6 +285,13 @@ start_dependency_track() {
   echo "✓ Dependency Track test environment started successfully!"
 }
 
+# Create API keys on an already running instance (no Docker)
+bootstrap_dependency_track() {
+  mkdir -p "$API_KEYS_DIR"
+  setup_auth_and_admin_api_key
+  setup_least_privilege_api_keys
+}
+
 # Stop Dependency Track environment
 stop_dependency_track() {
   echo "Stopping Dependency Track containers..."
@@ -300,7 +308,7 @@ stop_dependency_track() {
   
   # Delete the contents of the dtrack-data directory
   if [[ -d "$DATA_DIR" ]]; then
-    rm -rf "${DATA_DIR:?}/"{.,}*
+    rm -rf "${DATA_DIR:?}/"{.,}* || echo "WARNING: could not fully clean data directory"
     echo "✓ Data directory cleaned up."
   fi
   
@@ -309,10 +317,11 @@ stop_dependency_track() {
 
 # Show script usage
 show_usage() {
-  echo "Usage: $0 [start|stop]"
+  echo "Usage: $0 [start|bootstrap|stop]"
   echo ""
   echo "Commands:"
   echo "  start    Start the Dependency Track test environment"
+  echo "  bootstrap  Create API keys on the instance at DTRACK_URL (no Docker)"
   echo "  stop     Stop the Dependency Track test environment and clean up data"
   exit 1
 }
@@ -321,6 +330,9 @@ show_usage() {
 case "${1:-}" in
   start)
     start_dependency_track
+    ;;
+  bootstrap)
+    bootstrap_dependency_track
     ;;
   stop)
     stop_dependency_track
