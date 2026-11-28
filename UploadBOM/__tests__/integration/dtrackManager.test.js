@@ -10,7 +10,7 @@ const { getTestApiKey, generateUniqueName } = require('./test-utils');
 jest.mock('azure-pipelines-task-lib/task', () => mockTaskLib);
 
 describe('DTrackManager Integration Tests - Parent and Child Projects', () => {
-    const BASE_URL = 'https://localhost:8080';
+    const BASE_URL = process.env.DTRACK_URL || 'https://localhost:8080';
     let client;
     let dtrackManager;
     let apiKey;

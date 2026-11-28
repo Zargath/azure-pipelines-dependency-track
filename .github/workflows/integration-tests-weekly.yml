@@ -1,0 +1,43 @@
+name: Integration Tests - Weekly
+
+on:
+  schedule:
+    - cron: '0 3 * * 5'
+  workflow_dispatch:
+
+concurrency:
+  group: integration-tests-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  integration_tests:
+    name: "Integration Tests - ${{ matrix.task }} (DT ${{ matrix.dtrack }})"
+    runs-on: k8s-runners
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        task: [UploadBOM, AddProjectVersion]
+        dtrack: [v4, v5]
+    env:
+      DTRACK_URL: ${{ matrix.dtrack == 'v5' && secrets.DTRACK_V5_URL || secrets.DTRACK_V4_URL }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v7
+        with:
+          node-version: 20.x
+
+      - name: Create API keys
+        run: bash test-environment/dtrack-environment.sh bootstrap
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: ${{ matrix.task }}
+
+      - name: Run integration tests
+        run: npm run test:integration
+        working-directory: ${{ matrix.task }}

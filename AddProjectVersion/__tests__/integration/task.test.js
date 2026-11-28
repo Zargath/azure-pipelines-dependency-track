@@ -14,7 +14,7 @@ jest.mock('azure-pipelines-task-lib/task', () => mockTaskLib);
 process.env.NODE_ENV = 'test';
 
 describe('Task Integration Tests', () => {
-    const BASE_URL = 'https://localhost:8080';
+    const BASE_URL = process.env.DTRACK_URL || 'https://localhost:8080';
     let apiKey;
     let dTrackTestFixture;
     let caFilePath;
