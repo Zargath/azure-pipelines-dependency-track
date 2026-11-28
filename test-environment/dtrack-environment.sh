@@ -261,6 +261,7 @@ start_dependency_track() {
 
   # Create data directory if it doesn't exist
   mkdir -p "${DATA_DIR}"
+  chmod 777 "${DATA_DIR}"
 
   # v4 only: generate dummy NIST files to skip NVD feed download on startup
   if [[ "$DTRACK_MAJOR_VERSION" == "4" ]]; then
@@ -307,7 +308,7 @@ stop_dependency_track() {
   
   # Delete the contents of the dtrack-data directory
   if [[ -d "$DATA_DIR" ]]; then
-    rm -rf "${DATA_DIR:?}/"{.,}*
+    rm -rf "${DATA_DIR:?}/"{.,}* || echo "WARNING: could not fully clean data directory"
     echo "✓ Data directory cleaned up."
   fi
   
