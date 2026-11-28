@@ -261,12 +261,14 @@ start_dependency_track() {
 
   # Create data directory if it doesn't exist
   mkdir -p "${DATA_DIR}"
-  chmod 777 "${DATA_DIR}"
 
   # v4 only: generate dummy NIST files to skip NVD feed download on startup
   if [[ "$DTRACK_MAJOR_VERSION" == "4" ]]; then
     generate_nist_dummy_data "$DATA_DIR"
   fi
+
+  # The containers run as a different uid than the caller
+  chmod -R a+rwX "${DATA_DIR}"
 
   # Start the containers
   echo "Starting Docker containers..."

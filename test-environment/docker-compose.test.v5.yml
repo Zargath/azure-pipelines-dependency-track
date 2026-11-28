@@ -28,7 +28,7 @@ services:
       DT_DATASOURCE_USERNAME: "dtrack"
       DT_DATASOURCE_PASSWORD: "dtrack"
     ports:
-      - "8080"
+      - "127.0.0.1::8080"
     volumes:
       - "./dtrack-data:/data"
     restart: unless-stopped
@@ -38,13 +38,13 @@ services:
     environment:
       API_BASE_URL: "https://localhost:8080"
     ports:
-      - "8081"
+      - "127.0.0.1::8081"
     restart: unless-stopped
   nginx:
     image: nginx
     ports:
-      - "8081:8081"
-      - "8080:8080"
+      - "127.0.0.1:8081:8081"
+      - "127.0.0.1:8080:8080"
     volumes:
       - ./nginx-config:/etc/nginx/conf.d
       - ./certs:/etc/ssl/dtrack
