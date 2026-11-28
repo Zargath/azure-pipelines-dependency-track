@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   integration_tests:
-    name: "Integration Tests - ${{ matrix.task }} (DT ${{ matrix.dtrack }})"
+    name: "Integration Tests - ${{ matrix.task }} (DT v${{ matrix.dtrack }})"
     runs-on: k8s-runners
     permissions:
       contents: read
@@ -20,9 +20,9 @@ jobs:
       max-parallel: 1
       matrix:
         task: [UploadBOM, AddProjectVersion]
-        dtrack: [v4, v5]
+        dtrack: [4, 5]
     env:
-      DTRACK_URL: ${{ matrix.dtrack == 'v5' && secrets.DTRACK_V5_URL || secrets.DTRACK_V4_URL }}
+      DTRACK_MAJOR_VERSION: ${{ matrix.dtrack }}
     steps:
       - uses: actions/checkout@v7
 
@@ -31,8 +31,11 @@ jobs:
         with:
           node-version: 20.x
 
-      - name: Create API keys
-        run: bash test-environment/dtrack-environment.sh bootstrap
+      - name: Generate certificates
+        run: bash test-environment/generate-certs.sh
+
+      - name: Start Dependency-Track
+        run: bash test-environment/dtrack-environment.sh start
 
       - name: Install dependencies
         run: npm install
@@ -41,3 +44,11 @@ jobs:
       - name: Run integration tests
         run: npm run test:integration
         working-directory: ${{ matrix.task }}
+
+      - name: Dump container logs
+        if: ${{ failure() }}
+        run: docker ps -a && docker logs dtrack-apiserver --tail 200
+
+      - name: Stop Dependency-Track
+        if: ${{ always() }}
+        run: bash test-environment/dtrack-environment.sh stop
